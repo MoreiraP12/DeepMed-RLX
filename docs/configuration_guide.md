@@ -9,9 +9,9 @@ cd deer-flow
 cp conf.yaml.example conf.yaml
 ```
 
-## Which models does DeerFlow support?
+## Which models does DeepMed-RLX support?
 
-In DeerFlow, currently we only support non-reasoning models, which means models like OpenAI's o1/o3 or DeepSeek's R1 are not supported yet, but we will add support for them in the future.
+In DeepMed-RLX, currently we only support non-reasoning models, which means models like OpenAI's o1/o3 or DeepSeek's R1 are not supported yet, but we will add support for them in the future.
 
 ### Supported Models
 
@@ -29,7 +29,7 @@ You can switch the model in use by modifying the `conf.yaml` file in the root di
 
 ### How to use OpenAI-Compatible models?
 
-DeerFlow supports integration with OpenAI-Compatible models, which are models that implement the OpenAI API specification. This includes various open-source and commercial models that provide API endpoints compatible with the OpenAI format. You can refer to [litellm OpenAI-Compatible](https://docs.litellm.ai/docs/providers/openai_compatible) for detailed documentation.
+DeepMed-RLX supports integration with OpenAI-Compatible models, which are models that implement the OpenAI API specification. This includes various open-source and commercial models that provide API endpoints compatible with the OpenAI format. You can refer to [litellm OpenAI-Compatible](https://docs.litellm.ai/docs/providers/openai_compatible) for detailed documentation.
 The following is a configuration example of `conf.yaml` for using OpenAI-Compatible models:
 
 ```yaml
@@ -60,7 +60,7 @@ BASIC_MODEL:
 
 ### How to use Ollama models?
 
-DeerFlow supports the integration of Ollama models. You can refer to [litellm Ollama](https://docs.litellm.ai/docs/providers/ollama). <br>
+DeepMed-RLX supports the integration of Ollama models. You can refer to [litellm Ollama](https://docs.litellm.ai/docs/providers/ollama). <br>
 The following is a configuration example of `conf.yaml` for using Ollama models:
 
 ```yaml
@@ -71,7 +71,7 @@ BASIC_MODEL:
 
 ### How to use OpenRouter models?
 
-DeerFlow supports the integration of OpenRouter models. You can refer to [litellm OpenRouter](https://docs.litellm.ai/docs/providers/openrouter). To use OpenRouter models, you need to:
+DeepMed-RLX supports the integration of OpenRouter models. You can refer to [litellm OpenRouter](https://docs.litellm.ai/docs/providers/openrouter). To use OpenRouter models, you need to:
 1. Obtain the OPENROUTER_API_KEY from OpenRouter (https://openrouter.ai/) and set it in the environment variable.
 2. Add the `openrouter/` prefix before the model name.
 3. Configure the correct OpenRouter base URL.
@@ -91,7 +91,7 @@ Note: The available models and their exact names may change over time. Please ve
 
 ### How to use Azure models?
 
-DeerFlow supports the integration of Azure models. You can refer to [litellm Azure](https://docs.litellm.ai/docs/providers/azure). Configuration example of `conf.yaml`:
+DeepMed-RLX supports the integration of Azure models. You can refer to [litellm Azure](https://docs.litellm.ai/docs/providers/azure). Configuration example of `conf.yaml`:
 ```yaml
 BASIC_MODEL:
   model: "azure/gpt-4o-2024-08-06"

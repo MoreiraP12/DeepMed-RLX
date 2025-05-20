@@ -19,7 +19,7 @@ const Main = dynamic(() => import("./main"), {
   ssr: false,
   loading: () => (
     <div className="flex h-full w-full items-center justify-center">
-      Loading DeerFlow...
+      Loading DeepMed-RLX...
     </div>
   ),
 });
@@ -30,7 +30,7 @@ export default function HomePage() {
       <header className="fixed top-0 left-0 flex h-12 w-full items-center justify-between px-4">
         <Logo />
         <div className="flex items-center">
-          <Tooltip title="Star DeerFlow on GitHub">
+          <Tooltip title="Star DeepMed-RLX on GitHub">
             <Button variant="ghost" size="icon" asChild>
               <Link
                 href="https://github.com/bytedance/deer-flow"

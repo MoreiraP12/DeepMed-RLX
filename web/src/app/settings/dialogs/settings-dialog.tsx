@@ -101,9 +101,9 @@ export function SettingsDialog() {
       </Tooltip>
       <DialogContent className="sm:max-w-[850px]">
         <DialogHeader>
-          <DialogTitle>DeerFlow Settings</DialogTitle>
+          <DialogTitle>DeepMed-RLX Settings</DialogTitle>
           <DialogDescription>
-            Manage your DeerFlow settings here.
+            Manage your DeepMed-RLX settings here.
           </DialogDescription>
         </DialogHeader>
         <Tabs value={activeTabId}>

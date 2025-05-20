@@ -14,7 +14,7 @@ export function Jumbotron() {
   return (
     <section className="flex h-[95vh] w-full flex-col items-center justify-center pb-15">
       <FlickeringGrid
-        id="deer-hero-bg"
+        id="fox-hero-bg"
         className={`absolute inset-0 z-0 [mask-image:radial-gradient(800px_circle_at_center,white,transparent)]`}
         squareSize={4}
         gridGap={4}
@@ -23,8 +23,8 @@ export function Jumbotron() {
         flickerChance={0.1}
       />
       <FlickeringGrid
-        id="deer-hero"
-        className="absolute inset-0 z-0 translate-y-[2vh] mask-[url(/images/deer-hero.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
+        id="fox-hero"
+        className="absolute inset-0 z-0 translate-y-[2vh] mask-[url(/images/fox-hero.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
         squareSize={3}
         gridGap={6}
         color="#60A5FA"
@@ -36,10 +36,10 @@ export function Jumbotron() {
           <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
             Deep Research{" "}
           </span>
-          <AuroraText>at Your Fingertips</AuroraText>
+          <AuroraText colors={["#FFA500", "#019EF3"]}>at Your Fingertips</AuroraText>
         </h1>
         <p className="max-w-4xl p-2 text-center text-sm opacity-85 md:text-2xl">
-          Meet DeerFlow, your personal Deep Research assistant. With powerful
+          Meet DeepMed-RLX, your personal Deep Research assistant. With powerful
           tools like search engines, web crawlers, Python and MCP services, it
           delivers instant insights, comprehensive reports, and even captivating
           podcasts.

@@ -133,10 +133,10 @@ export function MessagesBlock({ className }: { className?: string }) {
                     <CardDescription>
                       <RainbowText animated={responding}>
                         {responding
-                          ? "DeerFlow is now replaying the conversation..."
+                          ? "DeepMed-RLX is now replaying the conversation..."
                           : replayStarted
                             ? "The replay has been stopped."
-                            : `You're now in DeerFlow's replay mode. Click the "Play" button on the right to start.`}
+                            : `You're now in DeepMed-RLX's replay mode. Click the "Play" button on the right to start.`}
                       </RainbowText>
                     </CardDescription>
                   </CardHeader>

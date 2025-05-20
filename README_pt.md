@@ -1,4 +1,4 @@
-# 🦌 DeerFlow
+# DeepMed-RLX
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,9 +10,9 @@
 
 > Originado do Open Source, de volta ao Open Source
 
-**DeerFlow** (**D**eep **E**xploration and **E**fficient **R**esearch **Flow**) é um framework de Pesquisa Profunda orientado-a-comunidade que baseia-se em um íncrivel trabalho da comunidade open source. Nosso objetivo é combinar modelos de linguagem com ferramentas especializadas para tarefas como busca na web, crawling, e execução de código Python, enquanto retribui com a comunidade que o tornou possível.
+**DeepMed-RLX** (**D**eep **E**xploration and **E**fficient **R**esearch **Flow**) é um framework de Pesquisa Profunda orientado-a-comunidade que baseia-se em um íncrivel trabalho da comunidade open source. Nosso objetivo é combinar modelos de linguagem com ferramentas especializadas para tarefas como busca na web, crawling, e execução de código Python, enquanto retribui com a comunidade que o tornou possível.
 
-Por favor, visite [Nosso Site Oficial](https://deerflow.tech/) para maiores detalhes.
+Por favor, visite [Nosso Site Oficial](https://DeepMed-RLX.tech/) para maiores detalhes.
 
 ## Demo
 
@@ -20,8 +20,8 @@ Por favor, visite [Nosso Site Oficial](https://deerflow.tech/) para maiores deta
 
 https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
 
-Nesse demo, nós demonstramos como usar o DeerFlow para:
-In this demo, we showcase how to use DeerFlow to:
+Nesse demo, nós demonstramos como usar o DeepMed-RLX para:
+In this demo, we showcase how to use DeepMed-RLX to:
 
 - Integração fácil com serviços MCP
 - Conduzir o processo de Pesquisa Profunda e produzir um relatório abrangente com imagens
@@ -29,11 +29,11 @@ In this demo, we showcase how to use DeerFlow to:
 
 ### Replays
 
-- [Quão alta é a Torre Eiffel comparada ao prédio mais alto?](https://deerflow.tech/chat?replay=eiffel-tower-vs-tallest-building)
-- [Quais são os top repositórios tendência no GitHub?](https://deerflow.tech/chat?replay=github-top-trending-repo)
-- [Escreva um artigo sobre os pratos tradicionais de Nanjing's](https://deerflow.tech/chat?replay=nanjing-traditional-dishes)
-- [Como decorar um apartamento alugado?](https://deerflow.tech/chat?replay=rental-apartment-decoration)
-- [Visite nosso site oficial para explorar mais replays.](https://deerflow.tech/#case-studies)
+- [Quão alta é a Torre Eiffel comparada ao prédio mais alto?](https://DeepMed-RLX.tech/chat?replay=eiffel-tower-vs-tallest-building)
+- [Quais são os top repositórios tendência no GitHub?](https://DeepMed-RLX.tech/chat?replay=github-top-trending-repo)
+- [Escreva um artigo sobre os pratos tradicionais de Nanjing's](https://DeepMed-RLX.tech/chat?replay=nanjing-traditional-dishes)
+- [Como decorar um apartamento alugado?](https://DeepMed-RLX.tech/chat?replay=rental-apartment-decoration)
+- [Visite nosso site oficial para explorar mais replays.](https://DeepMed-RLX.tech/#case-studies)
 
 ---
 
@@ -54,7 +54,7 @@ In this demo, we showcase how to use DeerFlow to:
 
 ## Início-Rápido
 
-DeerFlow é desenvolvido em Python, e vem com uma IU web escrita em Node.js. Para garantir um processo de configuração fácil, nós recomendamos o uso das seguintes ferramentas:
+DeepMed-RLX é desenvolvido em Python, e vem com uma IU web escrita em Node.js. Para garantir um processo de configuração fácil, nós recomendamos o uso das seguintes ferramentas:
 
 ### Ferramentas Recomendadas
 
@@ -147,7 +147,7 @@ Explore mais detalhes no diretório [`web`](./web/) .
 ## Mecanismos de Busca Suportados
 
 
-DeerFlow suporta múltiplos mecanismos de busca que podem ser configurados no seu arquivo `.env` usando a variável `SEARCH_API`:
+DeepMed-RLX suporta múltiplos mecanismos de busca que podem ser configurados no seu arquivo `.env` usando a variável `SEARCH_API`:
 
 - **Tavily** (padrão): Uma API de busca especializada para aplicações de IA
 
@@ -221,11 +221,11 @@ SEARCH_API=tavily
 
 ## Arquitetura
 
-DeerFlow implementa uma arquitetura de sistema multi-agente modular designada para pesquisa e análise de código automatizada. O sistema é construído em LangGraph, possibilitando um fluxo de trabalho flexível baseado-em-estado onde os componentes se comunicam através de um sistema de transmissão de mensagens bem-definido.
+DeepMed-RLX implementa uma arquitetura de sistema multi-agente modular designada para pesquisa e análise de código automatizada. O sistema é construído em LangGraph, possibilitando um fluxo de trabalho flexível baseado-em-estado onde os componentes se comunicam através de um sistema de transmissão de mensagens bem-definido.
 
 ![Diagrama de Arquitetura](./assets/architecture.png)
 
-> Veja ao vivo em [deerflow.tech](https://deerflow.tech/#multi-agent-architecture)
+> Veja ao vivo em [DeepMed-RLX.tech](https://DeepMed-RLX.tech/#multi-agent-architecture)
 
 O sistema emprega um fluxo de trabalho simplificado com os seguintes componentes:
 
@@ -254,7 +254,7 @@ O sistema emprega um fluxo de trabalho simplificado com os seguintes componentes
 
 ## Texto-para-Fala Integração
 
-DeerFlow agora inclui uma funcionalidade Texto-para-Fala (TTS) que permite que você converta relatórios de busca para voz. Essa funcionalidade usa o mecanismo de voz da API TTS para gerar áudio de alta qualidade a partir do texto. Funcionalidades como velocidade, volume e tom também são customizáveis.
+DeepMed-RLX agora inclui uma funcionalidade Texto-para-Fala (TTS) que permite que você converta relatórios de busca para voz. Essa funcionalidade usa o mecanismo de voz da API TTS para gerar áudio de alta qualidade a partir do texto. Funcionalidades como velocidade, volume e tom também são customizáveis.
 
 ### Usando a API TTS
 
@@ -302,11 +302,11 @@ make format
 
 ### Debugando com o LangGraph Studio
 
-DeerFlow usa LangGraph para sua arquitetura de fluxo de trabalho. Nós podemos usar o LangGraph Studio para debugar e visualizar o fluxo de trabalho em tempo real.
+DeepMed-RLX usa LangGraph para sua arquitetura de fluxo de trabalho. Nós podemos usar o LangGraph Studio para debugar e visualizar o fluxo de trabalho em tempo real.
 
 #### Rodando o LangGraph Studio Localmente
 
-DeerFlow inclui um arquivo de configuração `langgraph.json` que define a estrutura do grafo e dependências para o LangGraph Studio. Esse arquivo aponta para o grafo do fluxo de trabalho definido no projeto e automaticamente carrega as variáveis de ambiente do arquivo `.env`.
+DeepMed-RLX inclui um arquivo de configuração `langgraph.json` que define a estrutura do grafo e dependências para o LangGraph Studio. Esse arquivo aponta para o grafo do fluxo de trabalho definido no projeto e automaticamente carrega as variáveis de ambiente do arquivo `.env`.
 
 ##### Mac
 
@@ -379,7 +379,7 @@ docker stop deer-flow-api-app
 
 ### Docker Compose (inclui ambos backend e frontend)
 
-DeerFlow fornece uma estrutura docker-compose para facilmente executar ambos o backend e frontend juntos:
+DeepMed-RLX fornece uma estrutura docker-compose para facilmente executar ambos o backend e frontend juntos:
 
 ```bash
 # building docker image
@@ -391,7 +391,7 @@ docker compose up
 
 ## Exemplos:
 
-Os seguintes exemplos demonstram as capacidades do DeerFlow:
+Os seguintes exemplos demonstram as capacidades do DeepMed-RLX:
 
 ### Relatórios de Pesquisa
 
@@ -478,7 +478,7 @@ A aplicação agora suporta um modo interativo com questões embutidas tanto em 
 
 ### Humano no processo
 
-DeerFlow inclue um mecanismo de humano no processo que permite a você revisar, editar e aprovar planos de pesquisa antes que estes sejam executados:
+DeepMed-RLX inclue um mecanismo de humano no processo que permite a você revisar, editar e aprovar planos de pesquisa antes que estes sejam executados:
 
 1. **Revisão de Plano**: Quando o humano no processo está habilitado, o sistema irá apresentar o plano de pesquisa gerado para sua revisão antes da execução
 
@@ -522,23 +522,23 @@ Esse projeto é open source e disponível sob a [MIT License](./LICENSE).
 
 ## Agradecimentos
 
-DeerFlow é construído através do incrível trabalho da comunidade open-source. Nós somos profundamente gratos a todos os projetos e contribuidores cujos esforços tornaram o DeerFlow possível. Realmente, nós estamos apoiados nos ombros de gigantes.
+DeepMed-RLX é construído através do incrível trabalho da comunidade open-source. Nós somos profundamente gratos a todos os projetos e contribuidores cujos esforços tornaram o DeepMed-RLX possível. Realmente, nós estamos apoiados nos ombros de gigantes.
 
 Nós gostaríamos de extender nossos sinceros agradecimentos aos seguintes projetos por suas invaloráveis contribuições:
 
 - **[LangChain](https://github.com/langchain-ai/langchain)**: O framework excepcional deles empodera nossas interações via LLM e correntes, permitindo uma integração perfeita e funcional.
-- **[LangGraph](https://github.com/langchain-ai/langgraph)**: A abordagem inovativa para orquestração multi-agente deles tem sido foi fundamental em permitir o acesso dos fluxos de trabalho sofisticados do DeerFlow.
+- **[LangGraph](https://github.com/langchain-ai/langgraph)**: A abordagem inovativa para orquestração multi-agente deles tem sido foi fundamental em permitir o acesso dos fluxos de trabalho sofisticados do DeepMed-RLX.
 
 Esses projetos exemplificam o poder transformador da colaboração open-source, e nós temos orgulho de construir baseado em suas fundações.
 
 ### Contribuidores-Chave
 
-Um sincero muito obrigado vai para os principais autores do `DeerFlow`, cuja visão, paixão, e dedicação trouxe esse projeto à vida:
+Um sincero muito obrigado vai para os principais autores do `DeepMed-RLX`, cuja visão, paixão, e dedicação trouxe esse projeto à vida:
 
 - **[Daniel Walnut](https://github.com/hetaoBackend/)**
 - **[Henry Li](https://github.com/magiccube/)**
 
-O seu compromisso inabalável e experiência tem sido a força por trás do sucesso do DeerFlow. Nós estamos honrados em tê-los no comando dessa trajetória.
+O seu compromisso inabalável e experiência tem sido a força por trás do sucesso do DeepMed-RLX. Nós estamos honrados em tê-los no comando dessa trajetória.
 
 ## Histórico-Estrelas
 

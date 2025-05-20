@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-Server script for running the DeerFlow API.
+Server script for running the DeepMed-RLX API.
 """
 
 import argparse
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Run the DeerFlow API server")
+    parser = argparse.ArgumentParser(description="Run the DeepMed-RLX API server")
     parser.add_argument(
         "--reload",
         action="store_true",
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port to bind the server to (default: 8000)",
+        default=8056,
+        help="Port to bind the server to (default: 8056)",
     )
     parser.add_argument(
         "--log-level",
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     if args.reload:
         reload = True
 
-    logger.info("Starting DeerFlow API server")
+    logger.info("Starting DeepMed-RLX API server")
     uvicorn.run(
         "src.server:app",
         host=args.host,

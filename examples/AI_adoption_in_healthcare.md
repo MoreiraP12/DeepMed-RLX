@@ -68,7 +68,7 @@ The AI application management model (AIAMA) can help manage AI implementation fr
 
 Healthcare's digital transformation through AI depends on:
 
-*   **Data Infrastructure:** Ability to manage and analyze large volumes of patient data [https://www.sciencedirect.com/science/article/abs/pii/B9780443215988000142].
+*   **Data Infrastructure:** Ability to manage and analyze large volumes of patient data [https://www.sciencedirect.com/science/article/abs/pii/B9780443215988056142].
 *   **Technology Adoption:** Addressing challenges through efficiency, accuracy, and patient-centric services [https://optasy.com/blog/revolutionizing-patient-care-rise-ai-and-digital-healthcare].
 *   **Industry Lag:** Healthcare is "below average" in AI adoption compared to other sectors [https://www.weforum.org/stories/2025/03/ai-transforming-global-health/].
 *   **Rethinking Healthcare Delivery:** AI transformation requires rethinking how healthcare is delivered and accessed [https://www.weforum.org/stories/2025/03/ai-transforming-global-health/].
@@ -103,7 +103,7 @@ Healthcare's digital transformation through AI depends on:
 
 - [Managing artificial intelligence applications in healthcare: Promoting ...](https://www.sciencedirect.com/science/article/pii/S0268401223001093)
 
-- [Healthcare digital transformation through the adoption of artificial ...](https://www.sciencedirect.com/science/article/abs/pii/B9780443215988000142)
+- [Healthcare digital transformation through the adoption of artificial ...](https://www.sciencedirect.com/science/article/abs/pii/B9780443215988056142)
 
 - [Revolutionize Patient Care: The Rise of AI and Digital Healthcare](https://optasy.com/blog/revolutionizing-patient-care-rise-ai-and-digital-healthcare)
 

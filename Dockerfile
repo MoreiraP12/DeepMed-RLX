@@ -11,7 +11,7 @@ COPY . /app
 # Install the application dependencies.
 RUN uv sync --frozen --no-cache
 
-EXPOSE 8000
+EXPOSE 8056
 
 # Run the application.
-CMD ["uv", "run", "python", "server.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "python", "server.py", "--host", "0.0.0.0", "--port", "8056"]

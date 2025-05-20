@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useStore, useToolCalls } from "~/core/store";
 import { Tooltip } from "./tooltip";
 import { WarningFilled } from "@ant-design/icons";
+import { parseJSON } from "~/core/utils";
 
 export const Link = ({
   href,
@@ -21,10 +22,35 @@ export const Link = ({
 
     (toolCalls || []).forEach((call) => {
       if (call && call.name === "web_search" && call.result) {
-        const result = JSON.parse(call.result) as Array<{ url: string }>;
-        result.forEach((r) => {
-          links.add(r.url);
-        });
+        try {
+          // Log the raw result
+          console.warn("[Link] web_search call.result (raw):", call.result);
+          
+          // Try to parse it with the robust parseJSON utility
+          const result = parseJSON(call.result, []);
+          console.warn("[Link] web_search call.result (parsed):", result);
+          
+          // If the result is an array and contains objects with url property
+          if (Array.isArray(result)) {
+            result.forEach((r) => {
+              if (r && typeof r === 'object' && 'url' in r) {
+                links.add(r.url);
+              }
+            });
+          } 
+          // If the parsing returned an empty array (fallback), try to extract URLs directly
+          else if (typeof call.result === 'string') {
+            // Look for URLs in the text content
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const matches = call.result.match(urlRegex);
+            if (matches) {
+              matches.forEach(url => links.add(url));
+              console.warn("[Link] Extracted URLs from text:", matches);
+            }
+          }
+        } catch (err) {
+          console.error("[Link] Failed to process web_search call.result:", err);
+        }
       }
     });
     return links;

@@ -1,4 +1,4 @@
-# 🦌 DeerFlow
+# DeepMed-RLX
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -7,9 +7,9 @@
 
 > オープンソースから生まれ、オープンソースに還元する。
 
-**DeerFlow**（**D**eep **E**xploration and **E**fficient **R**esearch **Flow**）は、オープンソースコミュニティの素晴らしい成果の上に構築されたコミュニティ主導の深層研究フレームワークです。私たちの目標は、言語モデルとウェブ検索、クローリング、Python コード実行などの専門ツールを組み合わせながら、これを可能にしたコミュニティに貢献することです。
+**DeepMed-RLX**（**D**eep **E**xploration and **E**fficient **R**esearch **Flow**）は、オープンソースコミュニティの素晴らしい成果の上に構築されたコミュニティ主導の深層研究フレームワークです。私たちの目標は、言語モデルとウェブ検索、クローリング、Python コード実行などの専門ツールを組み合わせながら、これを可能にしたコミュニティに貢献することです。
 
-詳細については[DeerFlow の公式ウェブサイト](https://deerflow.tech/)をご覧ください。
+詳細については[DeepMed-RLX の公式ウェブサイト](https://DeepMed-RLX.tech/)をご覧ください。
 
 ## デモ
 
@@ -17,7 +17,7 @@
 
 https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
 
-このデモでは、DeerFlow の使用方法を紹介しています：
+このデモでは、DeepMed-RLX の使用方法を紹介しています：
 
 - MCP サービスとのシームレスな統合
 - 深層研究プロセスの実施と画像を含む包括的なレポートの作成
@@ -25,11 +25,11 @@ https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
 
 ### リプレイ例
 
-- [エッフェル塔は世界一高いビルと比べてどれくらい高い？](https://deerflow.tech/chat?replay=eiffel-tower-vs-tallest-building)
-- [GitHub で最も人気のあるリポジトリは？](https://deerflow.tech/chat?replay=github-top-trending-repo)
-- [南京の伝統料理に関する記事を書く](https://deerflow.tech/chat?replay=nanjing-traditional-dishes)
-- [賃貸アパートの装飾方法は？](https://deerflow.tech/chat?replay=rental-apartment-decoration)
-- [公式ウェブサイトでより多くのリプレイ例をご覧ください。](https://deerflow.tech/#case-studies)
+- [エッフェル塔は世界一高いビルと比べてどれくらい高い？](https://DeepMed-RLX.tech/chat?replay=eiffel-tower-vs-tallest-building)
+- [GitHub で最も人気のあるリポジトリは？](https://DeepMed-RLX.tech/chat?replay=github-top-trending-repo)
+- [南京の伝統料理に関する記事を書く](https://DeepMed-RLX.tech/chat?replay=nanjing-traditional-dishes)
+- [賃貸アパートの装飾方法は？](https://DeepMed-RLX.tech/chat?replay=rental-apartment-decoration)
+- [公式ウェブサイトでより多くのリプレイ例をご覧ください。](https://DeepMed-RLX.tech/#case-studies)
 
 ---
 
@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
 
 ## クイックスタート
 
-DeerFlow は Python で開発され、Node.js で書かれた Web UI が付属しています。スムーズなセットアッププロセスを確保するために、以下のツールの使用をお勧めします：
+DeepMed-RLX は Python で開発され、Node.js で書かれた Web UI が付属しています。スムーズなセットアッププロセスを確保するために、以下のツールの使用をお勧めします：
 
 ### 推奨ツール
 
@@ -140,7 +140,7 @@ bootstrap.bat -d
 
 ## サポートされている検索エンジン
 
-DeerFlow は複数の検索エンジンをサポートしており、`.env`ファイルの`SEARCH_API`変数で設定できます：
+DeepMed-RLX は複数の検索エンジンをサポートしており、`.env`ファイルの`SEARCH_API`変数で設定できます：
 
 - **Tavily**（デフォルト）：AI アプリケーション向けの専門検索 API
 
@@ -210,11 +210,11 @@ SEARCH_API=tavily
 
 ## アーキテクチャ
 
-DeerFlow は、自動研究とコード分析のためのモジュラーなマルチエージェントシステムアーキテクチャを実装しています。システムは LangGraph 上に構築され、コンポーネントが明確に定義されたメッセージパッシングシステムを通じて通信する柔軟な状態ベースのワークフローを実現しています。
+DeepMed-RLX は、自動研究とコード分析のためのモジュラーなマルチエージェントシステムアーキテクチャを実装しています。システムは LangGraph 上に構築され、コンポーネントが明確に定義されたメッセージパッシングシステムを通じて通信する柔軟な状態ベースのワークフローを実現しています。
 
 ![アーキテクチャ図](./assets/architecture.png)
 
-> [deerflow.tech](https://deerflow.tech/#multi-agent-architecture)でライブで確認できます
+> [DeepMed-RLX.tech](https://DeepMed-RLX.tech/#multi-agent-architecture)でライブで確認できます
 
 システムは以下のコンポーネントを含む合理化されたワークフローを採用しています：
 
@@ -270,11 +270,11 @@ make format
 
 ### LangGraph Studio によるデバッグ
 
-DeerFlow はワークフローアーキテクチャとして LangGraph を使用しています。LangGraph Studio を使用してワークフローをリアルタイムでデバッグおよび可視化できます。
+DeepMed-RLX はワークフローアーキテクチャとして LangGraph を使用しています。LangGraph Studio を使用してワークフローをリアルタイムでデバッグおよび可視化できます。
 
 #### ローカルで LangGraph Studio を実行
 
-DeerFlow には`langgraph.json`設定ファイルが含まれており、これが LangGraph Studio のグラフ構造と依存関係を定義しています。このファイルはプロジェクトで定義されたワークフローグラフを指し、`.env`ファイルから環境変数を自動的に読み込みます。
+DeepMed-RLX には`langgraph.json`設定ファイルが含まれており、これが LangGraph Studio のグラフ構造と依存関係を定義しています。このファイルはプロジェクトで定義されたワークフローグラフを指し、`.env`ファイルから環境変数を自動的に読み込みます。
 
 ##### Mac
 
@@ -324,7 +324,7 @@ Studio UI で研究トピックを送信すると、次を含む全ワークフ�
 
 ### LangSmith トレースの有効化
 
-DeerFlow は LangSmith トレース機能をサポートしており、ワークフローのデバッグとモニタリングに役立ちます。LangSmith トレースを有効にするには：
+DeepMed-RLX は LangSmith トレース機能をサポートしており、ワークフローのデバッグとモニタリングに役立ちます。LangSmith トレースを有効にするには：
 
 1. `.env` ファイルに次の設定があることを確認してください（`.env.example` を参照）：
    ```bash
@@ -357,7 +357,7 @@ docker build -t deer-flow-api .
 
 ```bash
 # deer-flow-api-appを希望のコンテナ名に置き換えてください
-docker run -d -t -p 8000:8000 --env-file .env --name deer-flow-api-app deer-flow-api
+docker run -d -t -p 8056:8056 --env-file .env --name deer-flow-api-app deer-flow-api
 
 # サーバーを停止
 docker stop deer-flow-api-app
@@ -377,7 +377,7 @@ docker compose up
 
 ## テキスト読み上げ統合
 
-DeerFlow には現在、研究レポートを音声に変換できるテキスト読み上げ（TTS）機能が含まれています。この機能は火山引擎 TTS API を使用して高品質なテキストオーディオを生成します。速度、音量、ピッチなどの特性もカスタマイズ可能です。
+DeepMed-RLX には現在、研究レポートを音声に変換できるテキスト読み上げ（TTS）機能が含まれています。この機能は火山引擎 TTS API を使用して高品質なテキストオーディオを生成します。速度、音量、ピッチなどの特性もカスタマイズ可能です。
 
 ### TTS API の使用
 
@@ -385,7 +385,7 @@ DeerFlow には現在、研究レポートを音声に変換できるテキス�
 
 ```bash
 # curlを使用したAPI呼び出し例
-curl --location 'http://localhost:8000/api/tts' \
+curl --location 'http://localhost:8056/api/tts' \
 --header 'Content-Type: application/json' \
 --data '{
     "text": "これはテキスト読み上げ機能のテストです。",
@@ -398,7 +398,7 @@ curl --location 'http://localhost:8000/api/tts' \
 
 ## 例
 
-以下の例は DeerFlow の機能を示しています：
+以下の例は DeepMed-RLX の機能を示しています：
 
 ### 研究レポート
 
@@ -484,7 +484,7 @@ uv run main.py --help
 
 ### 人間参加型ループ
 
-DeerFlow には人間参加型ループメカニズムが含まれており、研究計画を実行する前にレビュー、編集、承認することができます：
+DeepMed-RLX には人間参加型ループメカニズムが含まれており、研究計画を実行する前にレビュー、編集、承認することができます：
 
 1. **計画レビュー**：人間参加型ループが有効な場合、システムは実行前に生成された研究計画を表示
 
@@ -530,23 +530,23 @@ DeerFlow には人間参加型ループメカニズムが含まれており、�
 
 ## 謝辞
 
-DeerFlow はオープンソースコミュニティの素晴らしい成果の上に構築されています。DeerFlow を可能にしたすべてのプロジェクトと貢献者に深く感謝します。私たちは確かに巨人の肩の上に立っています。
+DeepMed-RLX はオープンソースコミュニティの素晴らしい成果の上に構築されています。DeepMed-RLX を可能にしたすべてのプロジェクトと貢献者に深く感謝します。私たちは確かに巨人の肩の上に立っています。
 
 以下のプロジェクトに心からの感謝を表します：
 
 - **[LangChain](https://github.com/langchain-ai/langchain)**：彼らの優れたフレームワークは、シームレスな統合と機能性を実現する LLM 相互作用とチェーンに力を与えています。
-- **[LangGraph](https://github.com/langchain-ai/langgraph)**：マルチエージェントオーケストレーションへの革新的アプローチは、DeerFlow の複雑なワークフローの実現に不可欠でした。
+- **[LangGraph](https://github.com/langchain-ai/langgraph)**：マルチエージェントオーケストレーションへの革新的アプローチは、DeepMed-RLX の複雑なワークフローの実現に不可欠でした。
 
 これらのプロジェクトはオープンソースコラボレーションの変革力を示しており、その基盤の上に構築できることを誇りに思います。
 
 ### 主要貢献者
 
-`DeerFlow`の主要な作者に心から感謝します。彼らのビジョン、情熱、献身がこのプロジェクトを実現しました：
+`DeepMed-RLX`の主要な作者に心から感謝します。彼らのビジョン、情熱、献身がこのプロジェクトを実現しました：
 
 - **[Daniel Walnut](https://github.com/hetaoBackend/)**
 - **[Henry Li](https://github.com/magiccube/)**
 
-あなたの揺るぎない取り組みと専門知識が DeerFlow の成功を推進しています。この旅をリードしていただき光栄です。
+あなたの揺るぎない取り組みと専門知識が DeepMed-RLX の成功を推進しています。この旅をリードしていただき光栄です。
 
 ## スター履歴
 

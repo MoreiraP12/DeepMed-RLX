@@ -125,19 +125,54 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
   const searchResults = useMemo<SearchResult[]>(() => {
     let results: SearchResult[] | undefined = undefined;
     try {
-      results = toolCall.result ? parseJSON(toolCall.result, []) : undefined;
-    } catch {
-      results = undefined;
-    }
-    if (Array.isArray(results)) {
-      results.forEach((result) => {
-        if (result.type === "page") {
-          __pageCache.set(result.url, result.title);
+      // Log raw result for debugging
+      if (toolCall.result) {
+        console.warn("[WebSearchToolCall] Raw result:", toolCall.result);
+      }
+
+      if (!toolCall.result) {
+        return [];
+      }
+      
+      // Try to parse using parseJSON
+      results = parseJSON(toolCall.result, []);
+      console.warn("[WebSearchToolCall] Parsed result:", results);
+      
+      // Handle non-standard search results
+      if (!Array.isArray(results) || results.length === 0) {
+        // For academic paper results, try to extract information
+        if (toolCall.result.includes('Published:') && toolCall.result.includes('Title:')) {
+          const papers = toolCall.result.split(/\n\n(?=Published:)/);
+          results = papers.map(paper => {
+            const titleMatch = paper.match(/Title: (.*)/);
+            const title = titleMatch ? titleMatch[1] : "Academic paper";
+            return {
+              type: "page",
+              title: title,
+              url: `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`,
+              content: paper
+            };
+          });
+          console.warn("[WebSearchToolCall] Created academic paper results:", results);
         }
-      });
-    } else {
+      }
+    } catch (err) {
+      console.error("[WebSearchToolCall] Error parsing result:", err, toolCall.result);
       results = [];
     }
+    
+    // Ensure we have a valid array
+    if (!Array.isArray(results)) {
+      results = [];
+    }
+    
+    // Cache page titles if available
+    results.forEach((result) => {
+      if (result.type === "page") {
+        __pageCache.set(result.url, result.title);
+      }
+    });
+    
     return results;
   }, [toolCall.result]);
   const pageResults = useMemo(
