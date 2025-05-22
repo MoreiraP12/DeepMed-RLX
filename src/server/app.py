@@ -10,7 +10,8 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import Response, StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import AIMessageChunk, ToolMessage
 from langgraph.types import Command
 
@@ -46,6 +47,11 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Mount a static directory for serving images
+images_dir = os.path.join(os.getcwd(), "images")
+os.makedirs(images_dir, exist_ok=True)
+app.mount("/images", StaticFiles(directory=images_dir), name="images")
 
 graph = build_graph_with_memory()
 
@@ -120,6 +126,16 @@ async def _astream_workflow_generator(
                             {"text": "Edit plan", "value": "edit_plan"},
                             {"text": "Start research", "value": "accepted"},
                         ],
+                    },
+                )
+            # Check for images in the event data
+            elif "images" in event_data:
+                yield _make_event(
+                    "images",
+                    {
+                        "thread_id": thread_id,
+                        "agent": agent[0] if agent else "coder",
+                        "images": event_data["images"],
                     },
                 )
             continue
@@ -316,3 +332,12 @@ async def mcp_server_metadata(request: MCPServerMetadataRequest):
             logger.exception(f"Error in MCP server metadata endpoint: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
         raise
+
+
+@app.get("/images/{image_path:path}")
+async def get_image(image_path: str):
+    """Serve an image file from the images directory."""
+    full_path = os.path.join(images_dir, image_path)
+    if not os.path.exists(full_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(full_path)

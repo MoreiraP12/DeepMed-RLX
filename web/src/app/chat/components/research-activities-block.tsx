@@ -341,35 +341,143 @@ function PythonToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
           </SyntaxHighlighter>
         </div>
       </div>
-      {toolCall.result && <PythonToolCallResult result={toolCall.result} />}
+      {toolCall.result && <PythonToolCallResult toolCall={toolCall} />}
     </section>
   );
 }
 
-function PythonToolCallResult({ result }: { result: string }) {
+function PythonToolCallResult({ toolCall }: { toolCall: ToolCallRuntime }) {
   const { resolvedTheme } = useTheme();
+  const result = toolCall.result || "";
+  
+  // Add console logging for debugging
+  console.log("PythonToolCallResult raw result:", result);
+  
   const hasError = useMemo(
-    () => result.includes("Error executing code:\n"),
+    
+    () =>  JSON.parse(result).result.includes("\nError"),
     [result],
   );
+  
   const error = useMemo(() => {
-    if (hasError) {
-      const parts = result.split("```\nError: ");
-      if (parts.length > 1) {
-        return parts[1]!.trim();
+    // Only proceed if hasError is true and the result string exists.
+    if (hasError && result) {
+      try {
+        // Parse the outer JSON string.
+        const parsedData = JSON.parse(result);
+        const stringToSearch = parsedData.result; // This is the string containing the actual error message.
+  
+        if (typeof stringToSearch !== 'string') {
+          return null; // The expected 'result' property within the JSON was not a string.
+        }
+  
+        const errorMarker = "Error: ";
+        // Use lastIndexOf to find the last occurrence of "Error: ",
+        // which is more likely to be the specific Python exception message.
+        const startIndex = stringToSearch.lastIndexOf(errorMarker);
+  
+        if (startIndex !== -1) {
+          const actualStartIndex = startIndex + errorMarker.length;
+          // After JSON.parse, "\\n" from the JSON string becomes an actual newline "\n".
+          const endIndex = stringToSearch.indexOf("\n", actualStartIndex);
+  
+          if (endIndex !== -1) {
+            // Extract the first line of the specific error message.
+            return stringToSearch.slice(actualStartIndex, endIndex).trim();
+          } else {
+            // If no newline, the error message might go to the end of the string.
+            return stringToSearch.slice(actualStartIndex).trim();
+          }
+        } else {
+          // If "Error: " marker is not found, but hasError is true,
+          // the entire stringToSearch is likely the error message.
+          return stringToSearch.trim();
+        }
+      } catch (e) {
+        // Handles JSON.parse errors or other processing issues.
+        // If hasError is true but parsing failed, you might return the raw 'result'
+        // or null depending on how you want to handle malformed error strings.
+        // Returning null is safer if the structure is not as expected.
+        return null;
       }
     }
+    // If not hasError or no result string.
     return null;
   }, [result, hasError]);
+  
   const stdout = useMemo(() => {
-    if (!hasError) {
-      const parts = result.split("```\nStdout: ");
-      if (parts.length > 1) {
-        return parts[1]!.trim();
+    if (hasError || !result) {
+      return null;
+    }
+  
+    try {
+      const parsedData = JSON.parse(result);
+      const stringToSearch = parsedData.result;
+  
+      if (typeof stringToSearch !== 'string') {
+        return null;
+      }
+  
+      const stdoutMarker = "Stdout: ";
+      const startIndex = stringToSearch.indexOf(stdoutMarker);
+  
+      if (startIndex !== -1) {
+        const actualStartIndex = startIndex + stdoutMarker.length;
+        // After JSON.parse, literal "\\n" becomes an actual newline "\n".
+        const endIndex = stringToSearch.indexOf("\n", actualStartIndex);
+  
+        if (endIndex !== -1) {
+          return stringToSearch.slice(actualStartIndex, endIndex);
+        } else {
+          // Assume Stdout content goes to the end if no trailing newline.
+          return stringToSearch.slice(actualStartIndex);
+        }
+      } else {
+        // "Stdout: " marker not found in the content string.
+        return null;
+      }
+    } catch (e) {
+      // Handles JSON.parse errors or other processing issues.
+      return null;
+    }
+  }, [result, hasError]);
+  
+  // Log the parsed stdout for debugging
+  console.log("Parsed stdout:", stdout);
+  
+  // Extract image paths from the stdout
+  const images = useMemo(() => {
+    const imagePaths: string[] = [];
+    if (stdout) {
+      // Find all image markers in the format [Image saved to: path]
+      const imageRegex = /\[Image saved to: (.*?)\]/g;
+      let match;
+      while ((match = imageRegex.exec(stdout)) !== null) {
+        if (match[1]) {
+          imagePaths.push(match[1]);
+        }
+      }
+      
+      // Try alternate format: directly look for IMAGE: markers
+      if (imagePaths.length === 0 && stdout.includes("IMAGE:")) {
+        const directImageRegex = /IMAGE:\s+(\S+)/g; // \S+ matches non-whitespace characters
+        while ((match = directImageRegex.exec(stdout)) !== null) {
+          if (match[1]) {
+            imagePaths.push(match[1]);
+          }
+        }
       }
     }
-    return null;
-  }, [result, hasError]);
+    
+    // Deduplicate the imagePaths array
+    const uniqueImagePaths = [...new Set(imagePaths)];
+    
+    // Log the final unique images
+    console.log("Found unique images:", uniqueImagePaths); // You can uncomment this if needed for debugging
+    
+    return uniqueImagePaths;
+  }, [stdout]);
+  
   return (
     <>
       <div className="mt-4 font-medium italic">
@@ -389,6 +497,38 @@ function PythonToolCallResult({ result }: { result: string }) {
           {error ?? stdout ?? "(empty)"}
         </SyntaxHighlighter>
       </div>
+      
+      {/* Display any images found in the output */}
+      {images.length > 0 && (
+        <div className="mt-4">
+          <div className="font-medium italic">Generated Images</div>
+          <div className="mt-2 flex flex-wrap gap-4">
+            {images.map((imagePath, index) => (
+              <motion.div
+                key={`python-image-${index}`}
+                initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <a 
+                  href={`./images/${imagePath.replace(/^images\//, '')}`} 
+                  target="_blank"
+                  className="block rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <Image
+                    src={`/images/${imagePath.replace(/^images\//, '')}`}
+                    alt={`Python generated image ${index + 1}`}
+                    className="h-48 w-auto max-w-[400px] bg-cover bg-center"
+                    imageClassName="hover:scale-105 transition-transform duration-200"
+                    imageTransition
+                    fallback={<div className="p-4 text-center">Failed to load image</div>}
+                  />
+                </a>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 }
