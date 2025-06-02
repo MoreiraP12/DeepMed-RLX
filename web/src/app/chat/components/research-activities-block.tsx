@@ -15,6 +15,7 @@ import { FavIcon } from "~/components/deer-flow/fav-icon";
 import Image from "~/components/deer-flow/image";
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
+import { MarkdownWithThinking } from "~/components/deer-flow/markdown-with-thinking";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import {
@@ -75,9 +76,9 @@ function ActivityMessage({ messageId }: { messageId: string }) {
     if (message.agent !== "reporter" && message.agent !== "planner") {
       return (
         <div className="px-4 py-2">
-          <Markdown animated checkLinkCredibility>
+          <MarkdownWithThinking animated checkLinkCredibility>
             {message.content}
-          </Markdown>
+          </MarkdownWithThinking>
         </div>
       );
     }
@@ -145,9 +146,9 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
           const papers = toolCall.result.split(/\n\n(?=Published:)/);
           results = papers.map(paper => {
             const titleMatch = paper.match(/Title: (.*)/);
-            const title = titleMatch ? titleMatch[1] : "Academic paper";
+            const title = titleMatch?.[1] ?? "Academic paper";
             return {
-              type: "page",
+              type: "page" as const,
               title: title,
               url: `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`,
               content: paper

@@ -9,7 +9,7 @@ import { Welcome } from "./welcome";
 
 const questions = [
   "What’s the difference between an appointment and a walk-in?",
-  "How many years does an average Tesla battery last compared to a gasoline engine?",
+  "A 65-year-old man presents with four months of low-grade fever and malaise. He also says he has lost 9 kg (20 lb) during this period and suffers from extreme fatigue.",
   "How many liters of water are required to produce 1 kg of beef?",
   "How many times faster is the speed of light compared to the speed of sound?",
 ];

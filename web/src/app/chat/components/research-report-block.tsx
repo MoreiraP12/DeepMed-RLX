@@ -5,6 +5,7 @@ import { useCallback, useRef } from "react";
 
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
+import { MarkdownWithThinking } from "~/components/deer-flow/markdown-with-thinking";
 import ReportEditor from "~/components/editor";
 import { useReplay } from "~/core/replay";
 import { useMessage, useStore } from "~/core/store";
@@ -64,9 +65,9 @@ export function ResearchReportBlock({
         />
       ) : (
         <>
-          <Markdown animated checkLinkCredibility>
+          <MarkdownWithThinking animated checkLinkCredibility>
             {message?.content}
-          </Markdown>
+          </MarkdownWithThinking>
           {message?.isStreaming && <LoadingAnimation className="my-12" />}
         </>
       )}

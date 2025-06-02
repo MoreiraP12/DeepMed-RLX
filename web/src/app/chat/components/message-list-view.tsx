@@ -175,9 +175,7 @@ function MessageListItem({
           >
             <MessageBubble message={message}>
               <div className="flex w-full flex-col">
-                {message.agent === "coordinator" || 
-                 message.agent === "researcher" || 
-                 message.agent === "reporter" ? (
+                {message.role === "assistant" ? (
                   <MarkdownWithThinking>{message?.content}</MarkdownWithThinking>
                 ) : (
                   <Markdown>{message?.content}</Markdown>
