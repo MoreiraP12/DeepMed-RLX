@@ -8,6 +8,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
+import { MarkdownWithThinking } from "~/components/deer-flow/markdown-with-thinking";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { RollingText } from "~/components/deer-flow/rolling-text";
 import {
@@ -174,7 +175,13 @@ function MessageListItem({
           >
             <MessageBubble message={message}>
               <div className="flex w-full flex-col">
-                <Markdown>{message?.content}</Markdown>
+                {message.agent === "coordinator" || 
+                 message.agent === "researcher" || 
+                 message.agent === "reporter" ? (
+                  <MarkdownWithThinking>{message?.content}</MarkdownWithThinking>
+                ) : (
+                  <Markdown>{message?.content}</Markdown>
+                )}
               </div>
             </MessageBubble>
           </div>
