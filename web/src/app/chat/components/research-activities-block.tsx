@@ -424,15 +424,8 @@ function PythonToolCallResult({ toolCall }: { toolCall: ToolCallRuntime }) {
   
       if (startIndex !== -1) {
         const actualStartIndex = startIndex + stdoutMarker.length;
-        // After JSON.parse, literal "\\n" becomes an actual newline "\n".
-        const endIndex = stringToSearch.indexOf("\n", actualStartIndex);
-  
-        if (endIndex !== -1) {
-          return stringToSearch.slice(actualStartIndex, endIndex);
-        } else {
-          // Assume Stdout content goes to the end if no trailing newline.
-          return stringToSearch.slice(actualStartIndex);
-        }
+        // Return all content after "Stdout: " instead of stopping at the first newline
+        return stringToSearch.slice(actualStartIndex);
       } else {
         // "Stdout: " marker not found in the content string.
         return null;
