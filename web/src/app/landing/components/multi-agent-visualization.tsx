@@ -10,6 +10,7 @@ import {
   Position,
   type Edge,
   type ReactFlowInstance,
+  BackgroundVariant,
 } from "@xyflow/react";
 import {
   Play,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { ShineBorder } from "~/components/magicui/shine-border";
@@ -52,6 +54,7 @@ export function MultiAgentVisualization({ className }: { className?: string }) {
     activeStepIndex,
     playing,
   } = useMAVStore((state) => state);
+  const { resolvedTheme } = useTheme();
   const flowRef = useRef<ReactFlowInstance<GraphNode, Edge>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -91,14 +94,14 @@ export function MultiAgentVisualization({ className }: { className?: string }) {
       <ReactFlow
         className={cn("flex min-h-0 flex-grow")}
         style={{
-          ["--xy-background-color-default" as string]: "transparent",
+          ["--xy-background-color-default" as string]: resolvedTheme === "light" ? "white" : "transparent",
         }}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
         proOptions={{ hideAttribution: true }}
-        colorMode="dark"
+        colorMode={resolvedTheme === "light" ? "light" : "dark"}
         panOnScroll={false}
         zoomOnScroll={false}
         preventScrolling={false}
@@ -108,8 +111,11 @@ export function MultiAgentVisualization({ className }: { className?: string }) {
         }}
       >
         <Background
+          variant={BackgroundVariant.Dots}
+          size={1}
+          gap={100}
           className="[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
-          bgColor="var(--background)"
+          color="transparent"
         />
         <div
           ref={anchorRef}

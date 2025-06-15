@@ -1,0 +1,211 @@
+{
+  "nodes": [
+    {
+      "id": "__start__",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langchain",
+          "schema",
+          "runnable",
+          "RunnablePassthrough"
+        ],
+        "name": "__start__"
+      }
+    },
+    {
+      "id": "coordinator",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "coordinator"
+      }
+    },
+    {
+      "id": "background_investigator",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "background_investigator"
+      }
+    },
+    {
+      "id": "planner",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "planner"
+      }
+    },
+    {
+      "id": "reporter",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "reporter"
+      }
+    },
+    {
+      "id": "research_team",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "research_team"
+      }
+    },
+    {
+      "id": "researcher",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "researcher"
+      }
+    },
+    {
+      "id": "coder",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "coder"
+      }
+    },
+    {
+      "id": "human_feedback",
+      "type": "runnable",
+      "data": {
+        "id": [
+          "langgraph",
+          "utils",
+          "runnable",
+          "RunnableCallable"
+        ],
+        "name": "human_feedback"
+      }
+    },
+    {
+      "id": "__end__",
+      "type": "unknown",
+      "data": "__end__"
+    }
+  ],
+  "edges": [
+    {
+      "source": "__start__",
+      "target": "coordinator"
+    },
+    {
+      "source": "background_investigator",
+      "target": "planner",
+      "conditional": true
+    },
+    {
+      "source": "coder",
+      "target": "research_team",
+      "conditional": true
+    },
+    {
+      "source": "coordinator",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "coordinator",
+      "target": "background_investigator",
+      "conditional": true
+    },
+    {
+      "source": "coordinator",
+      "target": "planner",
+      "conditional": true
+    },
+    {
+      "source": "human_feedback",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "human_feedback",
+      "target": "planner",
+      "conditional": true
+    },
+    {
+      "source": "human_feedback",
+      "target": "reporter",
+      "conditional": true
+    },
+    {
+      "source": "human_feedback",
+      "target": "research_team",
+      "conditional": true
+    },
+    {
+      "source": "planner",
+      "target": "human_feedback",
+      "conditional": true
+    },
+    {
+      "source": "planner",
+      "target": "reporter",
+      "conditional": true
+    },
+    {
+      "source": "research_team",
+      "target": "coder",
+      "conditional": true
+    },
+    {
+      "source": "research_team",
+      "target": "planner",
+      "conditional": true
+    },
+    {
+      "source": "research_team",
+      "target": "researcher",
+      "conditional": true
+    },
+    {
+      "source": "researcher",
+      "target": "research_team",
+      "conditional": true
+    },
+    {
+      "source": "reporter",
+      "target": "__end__"
+    }
+  ]
+}

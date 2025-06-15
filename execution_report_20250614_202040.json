@@ -1,0 +1,100 @@
+{
+  "execution_log": [
+    {
+      "step": 1,
+      "timestamp": "2025-06-14T20:20:39.507418",
+      "state_keys": [
+        "messages",
+        "locale",
+        "auto_accepted_plan",
+        "enable_background_investigation"
+      ]
+    }
+  ],
+  "node_timings": {},
+  "graph_info": {
+    "nodes": [
+      "__start__",
+      "coordinator",
+      "background_investigator",
+      "planner",
+      "reporter",
+      "research_team",
+      "researcher",
+      "coder",
+      "human_feedback",
+      "__end__"
+    ],
+    "edges": [
+      {
+        "source": "__start__",
+        "target": "coordinator"
+      },
+      {
+        "source": "background_investigator",
+        "target": "planner"
+      },
+      {
+        "source": "coder",
+        "target": "research_team"
+      },
+      {
+        "source": "coordinator",
+        "target": "__end__"
+      },
+      {
+        "source": "coordinator",
+        "target": "background_investigator"
+      },
+      {
+        "source": "coordinator",
+        "target": "planner"
+      },
+      {
+        "source": "human_feedback",
+        "target": "__end__"
+      },
+      {
+        "source": "human_feedback",
+        "target": "planner"
+      },
+      {
+        "source": "human_feedback",
+        "target": "reporter"
+      },
+      {
+        "source": "human_feedback",
+        "target": "research_team"
+      },
+      {
+        "source": "planner",
+        "target": "human_feedback"
+      },
+      {
+        "source": "planner",
+        "target": "reporter"
+      },
+      {
+        "source": "research_team",
+        "target": "coder"
+      },
+      {
+        "source": "research_team",
+        "target": "planner"
+      },
+      {
+        "source": "research_team",
+        "target": "researcher"
+      },
+      {
+        "source": "researcher",
+        "target": "research_team"
+      },
+      {
+        "source": "reporter",
+        "target": "__end__"
+      }
+    ]
+  },
+  "timestamp": "2025-06-14T20:20:40.204604"
+}

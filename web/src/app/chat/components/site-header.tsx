@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { NumberTicker } from "~/components/magicui/number-ticker";
 import { Button } from "~/components/ui/button";
+import { ThemeToggle } from "~/components/deer-flow/theme-toggle";
 import { env } from "~/env";
 
 export async function SiteHeader() {
@@ -14,6 +15,9 @@ export async function SiteHeader() {
       <div className="container flex h-15 items-center justify-between px-3">
         <div className="text-xl font-medium">
           <span>DeepMed-RLX</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
         </div>
       </div>
       <hr className="from-border/0 via-border/70 to-border/0 m-0 h-px w-full border-none bg-gradient-to-r" />
