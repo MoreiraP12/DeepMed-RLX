@@ -305,9 +305,23 @@ def reporter_node(state: State):
             medical_sources = ['pubmed', 'cochrane', 'nice.org', 'who.int', 'nejm', 'bmj', 'lancet']
             is_medical_research = any(source in obs_text for source in medical_sources)
         
-        if is_medical_research and observations:
+        if is_medical_research and current_plan and current_plan.steps:
             logger.info("Detected medical research - generating enhanced EBM pyramid with Tavily integration")
-            ebm_pyramid_path = generate_enhanced_ebm_pyramid_for_research(observations)
+            
+            # Extract search results from completed research steps
+            research_step_results = []
+            
+            for step in current_plan.steps:
+                if step.step_type == StepType.RESEARCH and step.execution_res:
+                    logger.debug(f"Processing research step: {step.title}")
+                    research_step_results.append(step.execution_res)
+            
+            if research_step_results:
+                logger.info(f"Found {len(research_step_results)} completed research steps for EBM analysis")
+                ebm_pyramid_path = generate_enhanced_ebm_pyramid_for_research(research_step_results)
+            else:
+                logger.info("No completed research steps found - skipping EBM pyramid generation")
+                ebm_pyramid_path = None
             
             if ebm_pyramid_path:
                 # Add enhanced EBM pyramid to the report

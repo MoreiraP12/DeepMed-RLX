@@ -1,0 +1,91 @@
+{
+  "total_sources": 5,
+  "levels": {
+    "GUIDELINES": {
+      "level_number": 2,
+      "level_name": "Guidelines",
+      "display_name": "Clinical Guidelines & CATs",
+      "count": 1,
+      "percentage": 20.0,
+      "average_score": 0.5,
+      "color": "#4682B4",
+      "sources": [
+        {
+          "title": "s Media](https://doi.org/10.1542/peds.2019-0003)",
+          "url": "https://www.who.int/publications/i/item/9789240018583",
+          "domain": "www.who.int",
+          "score": 0.5,
+          "favicon_url": "https://www.who.int/favicon.ico",
+          "content_preview": "<think>\nOkay, let's tackle this task step by step. The user wants information on delayed antibiotic prescriptions for acute otitis media (AOM) in children. First, I need to understand what delayed pre..."
+        }
+      ]
+    },
+    "EXPERT_OPINION": {
+      "level_number": 7,
+      "level_name": "Expert Opinion",
+      "display_name": "Expert Opinion",
+      "count": 4,
+      "percentage": 80.0,
+      "average_score": 0.5,
+      "color": "#DC143C",
+      "sources": [
+        {
+          "title": "timicrobial resistance.",
+          "url": "https://doi.org/10.1542/jpeks.0000000000000217",
+          "domain": "doi.org",
+          "score": 0.5,
+          "favicon_url": "https://doi.org/favicon.ico",
+          "content_preview": "<think>\nOkay, let's tackle this task step by step. The user wants information on delayed antibiotic prescriptions for acute otitis media (AOM) in children. First, I need to understand what delayed pre..."
+        },
+        {
+          "title": "oi.org/10.1542/jpeks.0000000000000217)",
+          "url": "https://jamanetwork.com/journals/jamapediatrics/fullarticle/2795002",
+          "domain": "jamanetwork.com",
+          "score": 0.5,
+          "favicon_url": "https://jamanetwork.com/favicon.ico",
+          "content_preview": "<think>\nOkay, let's tackle this task step by step. The user wants information on delayed antibiotic prescriptions for acute otitis media (AOM) in children. First, I need to understand what delayed pre..."
+        },
+        {
+          "title": "network.com/journals/jamapediatrics/fullarticle/2795002)",
+          "url": "https://doi.org/10.1542/peds.2019-0003",
+          "domain": "doi.org",
+          "score": 0.5,
+          "favicon_url": "https://doi.org/favicon.ico",
+          "content_preview": "<think>\nOkay, let's tackle this task step by step. The user wants information on delayed antibiotic prescriptions for acute otitis media (AOM) in children. First, I need to understand what delayed pre..."
+        },
+        {
+          "title": "//www.who.int/publications/i/item/9789240018583)",
+          "url": "https://doi.org/10.1097/INF.0000000000003445",
+          "domain": "doi.org",
+          "score": 0.5,
+          "favicon_url": "https://doi.org/favicon.ico",
+          "content_preview": "<think>\nOkay, let's tackle this task step by step. The user wants information on delayed antibiotic prescriptions for acute otitis media (AOM) in children. First, I need to understand what delayed pre..."
+        }
+      ]
+    }
+  },
+  "domain_distribution": {
+    "doi.org": 3,
+    "jamanetwork.com": 1,
+    "www.who.int": 1
+  },
+  "top_domains": [
+    [
+      "doi.org",
+      3
+    ],
+    [
+      "jamanetwork.com",
+      1
+    ],
+    [
+      "www.who.int",
+      1
+    ]
+  ],
+  "quality_distribution": {
+    "high_quality": 1,
+    "medium_quality": 0,
+    "low_quality": 4
+  }
+}

@@ -9,6 +9,8 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict, Counter
 from enum import Enum
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend to avoid threading issues
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
@@ -169,13 +171,25 @@ class EnhancedEBMSourceClassifier:
     
     def classify_tavily_source(self, tavily_result: Dict[str, Any]) -> TavilySourceData:
         """Classify a Tavily search result into evidence levels"""
-        source = TavilySourceData(
-            title=tavily_result.get('title', ''),
-            url=tavily_result.get('url', ''),
-            content=tavily_result.get('content', ''),
-            score=tavily_result.get('score', 0.0),
-            raw_content=tavily_result.get('raw_content')
-        )
+        # Handle both raw Tavily format and cleaned format
+        if tavily_result.get("type") == "page":
+            # This is the cleaned format from clean_results_with_images
+            source = TavilySourceData(
+                title=tavily_result.get('title', ''),
+                url=tavily_result.get('url', ''),
+                content=tavily_result.get('content', ''),
+                score=tavily_result.get('score', 0.0),
+                raw_content=tavily_result.get('raw_content')
+            )
+        else:
+            # This is the raw Tavily API format (fallback for backward compatibility)
+            source = TavilySourceData(
+                title=tavily_result.get('title', ''),
+                url=tavily_result.get('url', ''),
+                content=tavily_result.get('content', ''),
+                score=tavily_result.get('score', 0.0),
+                raw_content=tavily_result.get('raw_content')
+            )
         
         # Determine evidence level
         source.evidence_level = self._determine_evidence_level(source)
@@ -393,27 +407,198 @@ def extract_tavily_sources_from_observations(observations: List[str]) -> List[Di
     """Extract Tavily search results from observation text"""
     tavily_sources = []
     
-    for obs in observations:
-        # Look for JSON-like structures that contain Tavily results
-        # This would typically come from the search tool outputs
+    logger.debug(f"Processing {len(observations)} observations for Tavily extraction")
+    for i, obs in enumerate(observations):
+        logger.debug(f"Observation {i+1} length: {len(obs)} characters")
+        logger.debug(f"Observation {i+1} preview: {obs[:200]}...")
+        
+        # Check if observation contains 'tavily', 'score', 'type': 'page' keywords
+        has_tavily_indicators = any(keyword in obs.lower() for keyword in ['tavily', '"score"', '"type": "page"', 'pubmed', 'cochrane'])
+        logger.debug(f"Observation {i+1} has Tavily indicators: {has_tavily_indicators}")
         try:
-            # Try to find JSON structures in the observation
-            import json
-            # Look for patterns that indicate Tavily results
+            # First, try to parse the entire observation as JSON (list of results)
+            try:
+                parsed_obs = json.loads(obs)
+                if isinstance(parsed_obs, list):
+                    # Check if this looks like Tavily cleaned results
+                    for item in parsed_obs:
+                        if isinstance(item, dict) and item.get("type") == "page" and "score" in item:
+                            tavily_sources.append(item)
+                        # Also handle background investigation results format
+                        elif isinstance(item, dict) and "title" in item and "content" in item:
+                            # Convert background investigation format to Tavily format
+                            tavily_item = {
+                                "type": "page",
+                                "title": item.get("title", ""),
+                                "url": item.get("url", ""),
+                                "content": item.get("content", ""),
+                                "score": 0.8  # Default score for background investigation results
+                            }
+                            tavily_sources.append(tavily_item)
+                    continue
+            except json.JSONDecodeError:
+                pass
+            
+            # Look for JSON-like structures that contain Tavily results
+            # This handles cases where the observation contains mixed text and JSON
+            import re
+            
+            # Pattern to find JSON objects with Tavily structure
+            json_pattern = r'\{[^{}]*"type"\s*:\s*"page"[^{}]*"score"\s*:\s*[\d.]+[^{}]*\}'
+            json_matches = re.findall(json_pattern, obs, re.MULTILINE | re.DOTALL)
+            
+            for match in json_matches:
+                try:
+                    result = json.loads(match)
+                    if isinstance(result, dict) and result.get("type") == "page" and "score" in result:
+                        tavily_sources.append(result)
+                except json.JSONDecodeError:
+                    continue
+            
+            # Also look for line-by-line JSON objects
             lines = obs.split('\n')
             for line in lines:
-                if 'score' in line and 'url' in line and 'title' in line:
+                line = line.strip()
+                if line and (line.startswith('{') and line.endswith('}')):
                     try:
-                        # Try to parse as JSON
                         result = json.loads(line)
-                        if isinstance(result, dict) and 'score' in result:
+                        if isinstance(result, dict) and result.get("type") == "page" and "score" in result:
                             tavily_sources.append(result)
-                    except:
+                    except json.JSONDecodeError:
                         continue
+                        
+            # Handle cases where tool output is stringified
+            # Look for patterns like: "Tool LoggedTavilySearchResultsWithImages returned: [..."
+            tool_output_pattern = r'Tool.*returned:\s*(\[.*?\])'
+            tool_matches = re.findall(tool_output_pattern, obs, re.MULTILINE | re.DOTALL)
+            
+            for match in tool_matches:
+                try:
+                    parsed_results = json.loads(match)
+                    if isinstance(parsed_results, list):
+                        for item in parsed_results:
+                            if isinstance(item, dict) and item.get("type") == "page" and "score" in item:
+                                tavily_sources.append(item)
+                except json.JSONDecodeError:
+                    continue
+                    
         except Exception as e:
-            logger.debug(f"Error extracting Tavily sources: {e}")
+            logger.debug(f"Error extracting Tavily sources from observation: {e}")
+            continue
     
-    return tavily_sources
+    # Remove duplicates based on URL
+    seen_urls = set()
+    unique_sources = []
+    for source in tavily_sources:
+        url = source.get('url', '')
+        if url and url not in seen_urls:
+            seen_urls.add(url)
+            unique_sources.append(source)
+    
+    logger.info(f"Extracted {len(unique_sources)} unique Tavily sources from {len(observations)} observations")
+    
+    # If no Tavily sources found, attempt basic fallback extraction for any search results
+    if not unique_sources:
+        logger.warning("No Tavily sources found, attempting fallback extraction for general search results")
+        for i, obs in enumerate(observations):
+            # Look for any URL patterns that might be search results
+            import re
+            url_pattern = r'https?://[^\s\]\)"]+'
+            urls = re.findall(url_pattern, obs)
+            
+            if urls:
+                logger.debug(f"Found {len(urls)} URLs in observation {i+1}")
+                # Try to extract basic information around URLs
+                for url in urls:
+                    # Create a basic source entry
+                    basic_source = {
+                        "type": "page",
+                        "title": "Search Result",  # Default title
+                        "url": url,
+                        "content": obs[:200] + "..." if len(obs) > 200 else obs,
+                        "score": 0.5  # Default score
+                    }
+                    
+                    # Try to find title near the URL
+                    url_index = obs.find(url)
+                    if url_index > 0:
+                        before_url = obs[max(0, url_index-100):url_index]
+                        title_match = re.search(r'([^\n\r]{10,80})', before_url.strip())
+                        if title_match:
+                            basic_source["title"] = title_match.group(1).strip()
+                    
+                    unique_sources.append(basic_source)
+        
+        logger.info(f"Fallback extraction added {len(unique_sources)} basic sources")
+    
+    return unique_sources
+
+def export_ebm_pyramid_data(pyramid_data: EBMPyramidData) -> Dict[str, Any]:
+    """Export EBM pyramid data as JSON for frontend consumption"""
+    
+    # Convert enum keys to strings and organize data
+    levels_data = {}
+    for level in EvidenceLevel:
+        sources = pyramid_data.sources_by_level.get(level, [])
+        if sources:
+            levels_data[level.name] = {
+                "level_number": level.value,
+                "level_name": level.name.replace('_', ' ').title(),
+                "display_name": _get_display_name(level),
+                "count": len(sources),
+                "percentage": (len(sources) / pyramid_data.total_sources) * 100 if pyramid_data.total_sources > 0 else 0,
+                "average_score": pyramid_data.average_score_by_level.get(level, 0.0),
+                "color": _get_level_color(level),
+                "sources": [
+                    {
+                        "title": source.title,
+                        "url": source.url,
+                        "domain": source.domain,
+                        "score": source.score,
+                        "favicon_url": source.favicon_url,
+                        "content_preview": source.content[:200] + "..." if len(source.content) > 200 else source.content
+                    }
+                    for source in sources[:5]  # Limit to top 5 sources per level
+                ]
+            }
+    
+    return {
+        "total_sources": pyramid_data.total_sources,
+        "levels": levels_data,
+        "domain_distribution": dict(pyramid_data.domain_distribution),
+        "top_domains": sorted(pyramid_data.domain_distribution.items(), key=lambda x: x[1], reverse=True)[:5],
+        "quality_distribution": {
+            "high_quality": sum(len(sources) for level, sources in pyramid_data.sources_by_level.items() if level.value <= 3),
+            "medium_quality": sum(len(sources) for level, sources in pyramid_data.sources_by_level.items() if 3 < level.value <= 5),
+            "low_quality": sum(len(sources) for level, sources in pyramid_data.sources_by_level.items() if level.value > 5)
+        }
+    }
+
+def _get_display_name(level: EvidenceLevel) -> str:
+    """Get user-friendly display name for evidence level"""
+    display_names = {
+        EvidenceLevel.SYSTEMATIC_REVIEWS: "Systematic Reviews & Meta-analyses",
+        EvidenceLevel.GUIDELINES: "Clinical Guidelines & CATs",
+        EvidenceLevel.RCTS: "Randomized Controlled Trials",
+        EvidenceLevel.COHORT: "Cohort Studies",
+        EvidenceLevel.CASE_CONTROL: "Case-Control Studies",
+        EvidenceLevel.CASE_SERIES: "Case Series & Reports",
+        EvidenceLevel.EXPERT_OPINION: "Expert Opinion"
+    }
+    return display_names.get(level, level.name.replace('_', ' ').title())
+
+def _get_level_color(level: EvidenceLevel) -> str:
+    """Get color code for evidence level"""
+    colors = {
+        EvidenceLevel.SYSTEMATIC_REVIEWS: '#2E8B57',    # Sea Green
+        EvidenceLevel.GUIDELINES: '#4682B4',           # Steel Blue  
+        EvidenceLevel.RCTS: '#1E90FF',                 # Dodger Blue
+        EvidenceLevel.COHORT: '#FFD700',               # Gold
+        EvidenceLevel.CASE_CONTROL: '#FF8C00',         # Dark Orange
+        EvidenceLevel.CASE_SERIES: '#FF6347',          # Tomato
+        EvidenceLevel.EXPERT_OPINION: '#DC143C'        # Crimson
+    }
+    return colors.get(level, '#888888')
 
 def generate_enhanced_ebm_pyramid_for_research(observations: List[str], output_dir: str = "outputs") -> Optional[str]:
     """Enhanced function to generate EBM pyramid with Tavily integration"""
@@ -448,7 +633,15 @@ def generate_enhanced_ebm_pyramid_for_research(observations: List[str], output_d
         visualizer = EnhancedEBMPyramidVisualizer()
         result_path = visualizer.create_enhanced_pyramid(pyramid_data, str(output_path))
         
+        # Also export JSON data for frontend
+        json_output_path = Path(output_dir) / "ebm_pyramid_data.json"
+        pyramid_json = export_ebm_pyramid_data(pyramid_data)
+        
+        with open(json_output_path, 'w') as f:
+            json.dump(pyramid_json, f, indent=2)
+        
         logger.info(f"Enhanced EBM pyramid generated: {result_path}")
+        logger.info(f"EBM pyramid JSON data exported: {json_output_path}")
         logger.info(f"Total sources analyzed: {pyramid_data.total_sources}")
         
         # Generate summary report

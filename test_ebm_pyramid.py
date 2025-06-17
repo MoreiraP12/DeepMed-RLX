@@ -137,36 +137,60 @@ def test_enhanced_ebm_pyramid():
     # Test with sample observations (simulating actual usage)
     print("\n🔬 Testing Full Integration...")
     sample_observations = [
-        """
-        ## Medical Research Findings
-
-        Based on Tavily search results, I found several high-quality sources:
-
-        ### Systematic Reviews Found:
-        {"title": "Systematic review and meta-analysis of COVID-19 treatments", "url": "https://pubmed.ncbi.nlm.nih.gov/example1", "content": "This systematic review and meta-analysis examines the effectiveness of various COVID-19 treatments...", "score": 0.92}
-
-        {"title": "Cochrane Review: Exercise therapy for chronic low back pain", "url": "https://cochranelibrary.com/cdsr/doi/10.1002/example", "content": "This Cochrane systematic review examines the evidence for exercise therapy...", "score": 0.91}
-
-        ### Clinical Guidelines:
-        {"title": "NICE Clinical Guidelines for Diabetes Management 2024", "url": "https://nice.org.uk/guidance/ng28", "content": "Updated clinical practice guidelines for the management of type 2 diabetes...", "score": 0.89}
-
-        ### Randomized Controlled Trials:
-        {"title": "Randomized controlled trial of new antihypertensive drug", "url": "https://nejm.org/doi/full/10.1056/example", "content": "A double-blind, placebo-controlled randomized trial evaluating...", "score": 0.85}
-
-        The evidence quality appears very strong with multiple systematic reviews and RCTs available.
-        """,
+        # Format 1: Direct JSON list (as returned by Tavily tool)
+        '''[
+    {
+        "type": "page",
+        "title": "Systematic review and meta-analysis of COVID-19 treatments",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/example1",
+        "content": "This systematic review and meta-analysis examines the effectiveness of various COVID-19 treatments. We analyzed data from 45 randomized controlled trials involving 15,000 patients...",
+        "score": 0.92,
+        "raw_content": "BACKGROUND: The COVID-19 pandemic has led to extensive research efforts..."
+    },
+    {
+        "type": "page", 
+        "title": "Cochrane Review: Exercise therapy for chronic low back pain",
+        "url": "https://cochranelibrary.com/cdsr/doi/10.1002/example",
+        "content": "This Cochrane systematic review examines the evidence for exercise therapy in treating chronic low back pain. Based on high-quality evidence from multiple RCTs...",
+        "score": 0.91,
+        "raw_content": "PLAIN LANGUAGE SUMMARY: Exercise therapy for chronic low back pain..."
+    }
+]''',
         
-        """
-        ## Additional Research Sources
-
-        Further investigation revealed:
+        # Format 2: Tool output logging format
+        '''Tool LoggedTavilySearchResultsWithImages returned: [
+    {
+        "type": "page",
+        "title": "NICE Clinical Guidelines for Diabetes Management 2024",
+        "url": "https://nice.org.uk/guidance/ng28", 
+        "content": "Updated clinical practice guidelines for the management of type 2 diabetes. These evidence-based recommendations incorporate the latest research findings...",
+        "score": 0.89,
+        "raw_content": "SCOPE: This guideline covers the care and management of type 2 diabetes..."
+    },
+    {
+        "type": "page",
+        "title": "Randomized controlled trial of new antihypertensive drug",
+        "url": "https://nejm.org/doi/full/10.1056/example",
+        "content": "A double-blind, placebo-controlled randomized trial evaluating the efficacy and safety of a novel ACE inhibitor. 500 patients were randomized...",
+        "score": 0.85,
+        "raw_content": "METHODS: We conducted a multicenter, randomized, double-blind, placebo-controlled trial..."
+    }
+]''',
         
-        {"title": "Prospective cohort study of dietary factors and heart disease", "url": "https://academic.oup.com/ajcn/example", "content": "A 20-year prospective cohort study following 50,000 participants...", "score": 0.78}
+        # Format 3: Mixed text with embedded JSON
+        '''## Medical Research Findings
 
-        {"title": "Case-control study of lung cancer risk factors", "url": "https://pubmed.ncbi.nlm.nih.gov/example2", "content": "A case-control study examining environmental and genetic risk factors...", "score": 0.71}
+Based on the search results, I found several high-quality sources:
 
-        These observational studies provide additional context to the experimental evidence.
-        """
+{"type": "page", "title": "Prospective cohort study of dietary factors and heart disease", "url": "https://academic.oup.com/ajcn/example", "content": "A 20-year prospective cohort study following 50,000 participants to examine the relationship between dietary patterns and cardiovascular disease incidence.", "score": 0.78}
+
+{"type": "page", "title": "Case-control study of lung cancer risk factors", "url": "https://pubmed.ncbi.nlm.nih.gov/example2", "content": "A case-control study examining environmental and genetic risk factors for lung cancer. 2,000 cases were matched with 2,000 controls...", "score": 0.71}
+
+The evidence quality appears very strong with multiple systematic reviews and RCTs available.''',
+        
+        # Format 4: Individual JSON objects on separate lines
+        '''{"type": "page", "title": "Meta-analysis of statin therapy for cardiovascular prevention", "url": "https://pubmed.ncbi.nlm.nih.gov/statin-meta", "content": "This meta-analysis pooled data from 28 randomized controlled trials of statin therapy for primary and secondary cardiovascular prevention.", "score": 0.88}
+{"type": "page", "title": "Expert consensus on hypertension management", "url": "https://hypertension.org/consensus2024", "content": "Expert opinion and consensus statement on current best practices for hypertension management in clinical settings.", "score": 0.64}'''
     ]
     
     try:
