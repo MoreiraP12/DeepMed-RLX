@@ -4,6 +4,7 @@
 import json
 import logging
 from typing import Annotated, Literal
+import re
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
@@ -29,6 +30,9 @@ from src.utils.json_utils import repair_json_output
 
 from .types import State
 from ..config import SEARCH_MAX_RESULTS, SELECTED_SEARCH_ENGINE, SearchEngine
+
+# Import enhanced EBM pyramid functionality
+from src.tools.ebm_pyramid import generate_enhanced_ebm_pyramid_for_research
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +252,8 @@ def reporter_node(state: State):
     """Reporter node that write a final report."""
     logger.info("Reporter write final report")
     current_plan = state.get("current_plan")
+    observations = state.get("observations", [])
+    
     input_ = {
         "messages": [
             HumanMessage(
@@ -257,7 +263,6 @@ def reporter_node(state: State):
         "locale": state.get("locale", "en-US"),
     }
     invoke_messages = apply_prompt_template("reporter", input_)
-    observations = state.get("observations", [])
 
     # Add a reminder about the new report format, citation style, and table usage
     invoke_messages.append(
@@ -274,10 +279,65 @@ def reporter_node(state: State):
                 name="observation",
             ).model_dump()
         )
+    
     logger.debug(f"Current invoke messages: {invoke_messages}")
     response = get_llm_by_type(AGENT_LLM_MAP["reporter"]).invoke(invoke_messages)
     response_content = response.content
     logger.info(f"reporter response: {response_content}")
+
+    # Generate EBM pyramid if this appears to be medical research
+    ebm_pyramid_path = None
+    try:
+        # Check if this is medical/clinical research by looking for medical keywords
+        medical_keywords = [
+            'medical', 'clinical', 'patient', 'treatment', 'diagnosis', 'therapy',
+            'disease', 'health', 'medicine', 'healthcare', 'therapeutic', 'pharmaceutical',
+            'hospital', 'doctor', 'physician', 'nursing', 'surgery', 'drug', 'medication'
+        ]
+        
+        # Check plan title and description for medical keywords
+        research_text = f"{current_plan.title} {current_plan.thought}".lower()
+        is_medical_research = any(keyword in research_text for keyword in medical_keywords)
+        
+        # Also check observations for medical sources
+        if not is_medical_research and observations:
+            obs_text = " ".join(observations).lower()
+            medical_sources = ['pubmed', 'cochrane', 'nice.org', 'who.int', 'nejm', 'bmj', 'lancet']
+            is_medical_research = any(source in obs_text for source in medical_sources)
+        
+        if is_medical_research and observations:
+            logger.info("Detected medical research - generating enhanced EBM pyramid with Tavily integration")
+            ebm_pyramid_path = generate_enhanced_ebm_pyramid_for_research(observations)
+            
+            if ebm_pyramid_path:
+                # Add enhanced EBM pyramid to the report
+                ebm_section = f"\n\n---\n\n## Evidence Quality Analysis\n\n"
+                ebm_section += f"An enhanced Evidence Based Medicine (EBM) pyramid has been generated using Tavily's rich metadata "
+                ebm_section += f"to visualize the quality and hierarchy of sources used in this research:\n\n"
+                ebm_section += f"![Enhanced EBM Pyramid]({ebm_pyramid_path})\n\n"
+                ebm_section += f"*The enhanced pyramid above integrates Tavily's source metadata including relevance scores, "
+                ebm_section += f"favicon logos, and domain analysis to provide a comprehensive view of evidence quality. "
+                ebm_section += f"Higher levels represent stronger evidence with greater reliability for clinical decision-making. "
+                ebm_section += f"Source logos and quality metrics help identify the most authoritative references used.*"
+                
+                # Insert EBM section before the final citations
+                if "## Key Citations" in response_content:
+                    response_content = response_content.replace("## Key Citations", ebm_section + "\n## Key Citations")
+                elif "# Key Citations" in response_content:
+                    response_content = response_content.replace("# Key Citations", ebm_section + "\n# Key Citations")
+                else:
+                    # Add at the end if no citations section found
+                    response_content += ebm_section
+                
+                logger.info(f"EBM pyramid added to report: {ebm_pyramid_path}")
+            else:
+                logger.info("EBM pyramid generation skipped - insufficient source data")
+        else:
+            logger.info("Non-medical research detected - skipping EBM pyramid generation")
+            
+    except Exception as e:
+        logger.error(f"Error generating EBM pyramid: {e}")
+        # Continue without EBM pyramid if there's an error
 
     return {"final_report": response_content}
 

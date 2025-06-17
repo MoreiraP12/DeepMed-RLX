@@ -39,6 +39,34 @@ export function ResearchReportBlock({
   );
   const contentRef = useRef<HTMLDivElement>(null);
   const isCompleted = message?.isStreaming === false && message?.content !== "";
+  
+  // Custom component for rendering EBM pyramid images with enhanced styling
+  const EBMPyramidImage = ({ src, alt }: { src: string; alt: string }) => {
+    if (src.includes('ebm_pyramid') || alt.toLowerCase().includes('ebm pyramid')) {
+      return (
+        <div className="my-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="text-center mb-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200">
+              📊 Evidence Quality Analysis
+            </span>
+          </div>
+          <img 
+            src={src} 
+            alt={alt}
+            className="mx-auto max-w-full h-auto rounded-md shadow-lg"
+            style={{ maxHeight: '600px' }}
+          />
+          <div className="mt-3 text-sm text-gray-600 dark:text-gray-300 text-center">
+            <strong>Evidence Based Medicine Pyramid:</strong> Visual analysis of source quality hierarchy
+          </div>
+        </div>
+      );
+    }
+    
+    // Default image rendering for non-EBM images
+    return <img src={src} alt={alt} className="mx-auto max-w-full h-auto rounded-md" />;
+  };
+
   // TODO: scroll to top when completed, but it's not working
   // useEffect(() => {
   //   if (isCompleted && contentRef.current) {
@@ -65,7 +93,13 @@ export function ResearchReportBlock({
         />
       ) : (
         <>
-          <MarkdownWithThinking animated checkLinkCredibility>
+          <MarkdownWithThinking 
+            animated 
+            checkLinkCredibility
+            components={{
+              img: EBMPyramidImage, // Use custom EBM pyramid image component
+            }}
+          >
             {message?.content}
           </MarkdownWithThinking>
           {message?.isStreaming && <LoadingAnimation className="my-12" />}
