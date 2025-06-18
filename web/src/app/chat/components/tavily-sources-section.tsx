@@ -188,9 +188,31 @@ export function TavilySourcesSection({ messageId }: TavilySourcesSectionProps) {
                      {/* Main pyramid container */}
            <div className="relative">
 
-                         {/* Pyramid levels */}
-             <div className="relative" style={{ width: '100%', height: '360px' }}>
-               {categorizedLevels.map((level, index) => {
+                         {/* Pyramid with labels */}
+             <div className="relative flex items-start" style={{ width: '100%', height: '360px' }}>
+               {/* Level labels on the left */}
+               <div className="flex flex-col justify-between" style={{ width: '200px', height: '360px', paddingTop: '30px' }}>
+                 {categorizedLevels.map((level, index) => (
+                   <div 
+                     key={`label-${level.id}`}
+                     className="flex items-center justify-end pr-4"
+                     style={{ height: '60px' }}
+                   >
+                     <div 
+                       className="font-semibold text-sm text-right"
+                       style={{ 
+                         color: level.sources.length > 0 ? '#1f2937' : '#6b7280'
+                       }}
+                     >
+                       {level.shortTitle}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+               
+               {/* Pyramid levels */}
+               <div className="relative" style={{ width: '400px', height: '360px' }}>
+                 {categorizedLevels.map((level, index) => {
                  // Calculate proper pyramid geometry
                  const totalLevels = categorizedLevels.length;
                  const levelHeight = 60;
@@ -250,143 +272,57 @@ export function TavilySourcesSection({ messageId }: TavilySourcesSectionProps) {
                      }}
                                         >
                        <div className="flex items-center justify-center h-full">
-                         {/* Special layout for top triangle level */}
-                         {index === 0 ? (
-                           <div className="flex flex-col items-center gap-1" style={{ marginTop: '10px' }}>
-                             {/* Level title for top level */}
-                             <div className="text-center">
-                               <div 
-                                 className="font-semibold text-xs"
-                                 style={{ 
-                                   color: level.sources.length > 0 ? 'white' : '#6b7280',
-                                   textShadow: level.sources.length > 0 ? '1px 1px 2px rgba(0,0,0,0.7)' : 'none'
-                                 }}
-                               >
-                                 {level.shortTitle}
-                               </div>
-                             </div>
-                             
-                             {/* Favicons for top level */}
-                             {level.sources.length > 0 && (
-                               <div className="flex items-center gap-1 justify-center">
-                                 {level.sources.map((source, sourceIndex) => {
-                                   const domain = extractDomain(source.url);
-                                   const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=14`;
-                                   
-                                   return (
-                                     <div
-                                       key={sourceIndex}
-                                       className="relative cursor-pointer transform transition-transform hover:scale-125"
-                                       onClick={() => window.open(source.url, '_blank')}
-                                       onMouseEnter={(e) => {
-                                         setHoveredSource(source);
-                                         setMousePosition({ x: e.clientX, y: e.clientY });
+                         {/* Favicons or "No sources" inside pyramid */}
+                         {level.sources.length > 0 ? (
+                           <div className="flex items-center gap-2 flex-wrap justify-center">
+                             {level.sources.map((source, sourceIndex) => {
+                               const domain = extractDomain(source.url);
+                               const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+                               
+                               return (
+                                 <div
+                                   key={sourceIndex}
+                                   className="relative cursor-pointer transform transition-transform hover:scale-125"
+                                   onClick={() => window.open(source.url, '_blank')}
+                                   onMouseEnter={(e) => {
+                                     setHoveredSource(source);
+                                     setMousePosition({ x: e.clientX, y: e.clientY });
+                                   }}
+                                   onMouseLeave={() => {
+                                     setHoveredSource(null);
+                                   }}
+                                   onMouseMove={(e) => {
+                                     if (hoveredSource === source) {
+                                       setMousePosition({ x: e.clientX, y: e.clientY });
+                                     }
+                                   }}
+                                 >
+                                   <div className="w-5 h-5 bg-white rounded-full p-0.5 shadow-lg border border-white/50">
+                                     <img
+                                       src={faviconUrl}
+                                       alt={domain}
+                                       className="w-full h-full object-contain rounded-full"
+                                       onError={(e) => {
+                                         e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04IDJMMTQgNi41VjEzSDJWNi41TDggMloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
                                        }}
-                                       onMouseLeave={() => {
-                                         setHoveredSource(null);
-                                       }}
-                                       onMouseMove={(e) => {
-                                         if (hoveredSource === source) {
-                                           setMousePosition({ x: e.clientX, y: e.clientY });
-                                         }
-                                       }}
-                                     >
-                                       <div className="w-4 h-4 bg-white rounded-full p-0.5 shadow-lg border border-white/50">
-                                         <img
-                                           src={faviconUrl}
-                                           alt={domain}
-                                           className="w-full h-full object-contain rounded-full"
-                                           onError={(e) => {
-                                             e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04IDJMMTQgNi41VjEzSDJWNi41TDggMloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
-                                           }}
-                                         />
-                                       </div>
-                                     </div>
-                                   );
-                                 })}
-                               </div>
-                             )}
-                             
-                             {/* No sources indicator for top level */}
-                             {level.sources.length === 0 && (
-                               <div className="text-xs text-gray-500 italic text-center">
-                                 No sources
-                               </div>
-                             )}
+                                     />
+                                   </div>
+                                 </div>
+                               );
+                             })}
                            </div>
                          ) : (
-                           /* Regular layout for other levels */
-                           <div className="flex items-center gap-4" style={{
-                             maxWidth: `${Math.min(levelWidth, nextLevelWidth) - 40}px`
-                           }}>
-                             {/* Level title */}
-                             <div className="flex-shrink-0">
-                               <div 
-                                 className="font-semibold text-sm"
-                                 style={{ 
-                                   color: level.sources.length > 0 ? 'white' : '#6b7280',
-                                   textShadow: level.sources.length > 0 ? '1px 1px 2px rgba(0,0,0,0.7)' : 'none'
-                                 }}
-                               >
-                                 {level.shortTitle}
-                               </div>
-                             </div>
-
-                             {/* Favicons */}
-                             {level.sources.length > 0 && (
-                               <div className="flex items-center gap-2 flex-wrap">
-                                 {level.sources.map((source, sourceIndex) => {
-                                   const domain = extractDomain(source.url);
-                                   const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
-                                   
-                                   return (
-                                     <div
-                                       key={sourceIndex}
-                                       className="relative cursor-pointer transform transition-transform hover:scale-125"
-                                       onClick={() => window.open(source.url, '_blank')}
-                                       onMouseEnter={(e) => {
-                                         setHoveredSource(source);
-                                         setMousePosition({ x: e.clientX, y: e.clientY });
-                                       }}
-                                       onMouseLeave={() => {
-                                         setHoveredSource(null);
-                                       }}
-                                       onMouseMove={(e) => {
-                                         if (hoveredSource === source) {
-                                           setMousePosition({ x: e.clientX, y: e.clientY });
-                                         }
-                                       }}
-                                     >
-                                       <div className="w-5 h-5 bg-white rounded-full p-0.5 shadow-lg border border-white/50">
-                                         <img
-                                           src={faviconUrl}
-                                           alt={domain}
-                                           className="w-full h-full object-contain rounded-full"
-                                           onError={(e) => {
-                                             e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04IDJMMTQgNi41VjEzSDJWNi41TDggMloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
-                                           }}
-                                         />
-                                       </div>
-                                     </div>
-                                   );
-                                 })}
-                               </div>
-                             )}
-                             
-                             {/* No sources indicator */}
-                             {level.sources.length === 0 && (
-                               <div className="text-xs text-gray-500 italic ml-2">
-                                 No sources
-                               </div>
-                             )}
+                           <div className="text-xs text-gray-500 italic text-center">
+                             No sources
                            </div>
                          )}
                        </div>
                      </div>
-                   );
-                                  })}
+                                        );
+                   })}
+                 </div>
                </div>
-           </div>
+             </div>
 
                    </div>
        </div>
