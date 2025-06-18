@@ -301,12 +301,8 @@ def reporter_node(state: State):
 
     # Return both the final report and tavily sources separately in the state
     tavily_sources = state.get("tavily_sources", [])
-    logger.info(f"🔧 Reporter node: tavily_sources in state: {len(tavily_sources)}")
     if tavily_sources:
-        logger.info(f"🔧 Reporter node will include {len(tavily_sources)} Tavily sources in state")
-        logger.info(f"🔧 Sources URLs: {[s.get('url', 'no-url') for s in tavily_sources[:3]]}")
-    else:
-        logger.info("🔧 Reporter node found no Tavily sources in state")
+        logger.info(f"Reporter node including {len(tavily_sources)} Tavily sources in state")
 
     return {
         "final_report": response_content,
@@ -411,9 +407,7 @@ async def _execute_agent_step(
                         seen_urls.add(url)
                 
                 tavily_sources.extend(unique_sources)
-                logger.info(f"🔧 Collected {len(unique_sources)} new Tavily sources from tool execution")
-                logger.info(f"🔧 Total tavily_sources now: {len(tavily_sources)}")
-                logger.info(f"🔧 Sources: {[s.get('url', 'no-url') for s in tavily_sources]}")
+                logger.info(f"Collected {len(unique_sources)} new Tavily sources from tool execution")
             else:
                 logger.debug("No new Tavily sources found in temp storage")
         except Exception as e:

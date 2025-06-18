@@ -189,35 +189,26 @@ async def _astream_workflow_generator(
     
     # Get final state to access tavily_sources
     try:
-        logger.info("🔧 Getting final state to check for tavily_sources...")
         # LangGraph get_state requires a config with configurable dict
         state_config = {"configurable": {"thread_id": thread_id}}
         final_state = graph.get_state(state_config)
-        logger.info(f"🔧 Final state type: {type(final_state)}")
-        logger.info(f"🔧 Final state keys: {list(final_state.values.keys()) if final_state and hasattr(final_state, 'values') else 'No values'}")
         
         if final_state and hasattr(final_state, 'values') and 'tavily_sources' in final_state.values:
             final_tavily_sources = final_state.values['tavily_sources']
-            logger.info(f"🔧 Found tavily_sources in final state: {len(final_tavily_sources)} sources")
-        else:
-            logger.info("🔧 No tavily_sources found in final state")
-            if final_state and hasattr(final_state, 'values'):
-                logger.info(f"🔧 Available keys in final state: {list(final_state.values.keys())}")
+            logger.info(f"Found {len(final_tavily_sources)} Tavily sources in final state")
     except Exception as e:
-        logger.error(f"🔧 Error getting final state: {e}")
-        import traceback
-        logger.error(f"🔧 Traceback: {traceback.format_exc()}")
+        logger.error(f"Error getting final state: {e}")
 
     # Send final tavily sources event if we have sources
     if final_tavily_sources:
-        logger.info(f"🔧 Sending final tavily_sources event with {len(final_tavily_sources)} sources")
+        logger.info(f"Sending tavily_sources event with {len(final_tavily_sources)} sources")
         yield _make_event("tavily_sources", {
             "thread_id": thread_id,
             "tavily_sources": final_tavily_sources,
             "count": len(final_tavily_sources)
         })
     else:
-        logger.info("🔧 No final tavily sources to send")
+        logger.info("No tavily sources found to send")
 
 
 def _make_event(event_type: str, data: dict[str, any]):
