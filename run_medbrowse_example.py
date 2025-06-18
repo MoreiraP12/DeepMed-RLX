@@ -22,12 +22,13 @@ async def run_sample_processing():
     # Create processor with sample configuration and enhanced error handling
     processor = MedBrowseProcessor(
         output_dir="outputs/medbrowse_sample",
-        max_plan_iterations=1,
-        max_step_num=2,  # Reduced for faster processing
-        enable_background_investigation=True,
+        max_plan_iterations=2,  # Set to 2 as requested  
+        max_step_num=3,         # Always set to 3 as requested
+        enable_background_investigation=False,  # Disabled for faster processing
         debug=False,
-        enable_fallback=True,  # Enable fallback for robustness
-        fallback_timeout=180   # 3 minute timeout for fallback
+        enable_fallback=True,   # Enable fallback for robustness
+        fallback_timeout=180,   # 3 minute timeout for fallback
+        max_retries=5           # Try up to 5 times for parsing errors (increased)
     )
     
     try:

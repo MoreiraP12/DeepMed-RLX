@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from contextlib import redirect_stdout, redirect_stderr
+import re
 
 # Third-party imports
 import pandas as pd
@@ -64,12 +65,13 @@ class MedBrowseProcessor:
     def __init__(
         self,
         output_dir: str = "outputs",
-        max_plan_iterations: int = 1,
-        max_step_num: int = 3,
-        enable_background_investigation: bool = True,
+        max_plan_iterations: int = 2,  # Set to 2 as requested
+        max_step_num: int = 3,         # Always set to 3 as requested
+        enable_background_investigation: bool = False,
         debug: bool = False,
         enable_fallback: bool = True,
-        fallback_timeout: int = 300  # 5 minutes timeout for fallback
+        fallback_timeout: int = 300,   # 5 minutes timeout for fallback
+        max_retries: int = 5           # Add retry limit for parsing errors (increased to 5)
     ):
         """Initialize the processor.
         
@@ -81,6 +83,7 @@ class MedBrowseProcessor:
             debug: Whether to enable debug logging
             enable_fallback: Whether to enable fallback mechanisms
             fallback_timeout: Timeout in seconds for fallback processing
+            max_retries: Maximum number of retries for parsing errors
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
@@ -91,6 +94,7 @@ class MedBrowseProcessor:
         self.debug = debug
         self.enable_fallback = enable_fallback
         self.fallback_timeout = fallback_timeout
+        self.max_retries = max_retries
         
         # Generate timestamp for unique output files
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -135,56 +139,94 @@ class MedBrowseProcessor:
         
         start_time = datetime.now()
         
-        # Try primary approach
-        try:
-            result = await self._run_workflow_with_capture(question_text, is_fallback=False)
-            result.update({
-                "question_index": question_idx,
-                "question_text": question_text,
-                "original_data": question_data,
-                "processing_time_seconds": (datetime.now() - start_time).total_seconds(),
-                "timestamp": start_time.isoformat(),
-                "status": "success",
-                "processing_method": "primary"
-            })
-            
-            logger.info(f"Successfully processed question {question_idx + 1} in {result['processing_time_seconds']:.2f}s")
-            return result
-            
-        except Exception as primary_error:
-            logger.warning(f"Primary processing failed for question {question_idx + 1}: {primary_error}")
-            
-            # Try fallback approach if enabled
-            if self.enable_fallback:
-                try:
-                    logger.info(f"Attempting fallback processing for question {question_idx + 1}")
-                    result = await self._run_workflow_with_fallback(question_text)
-                    result.update({
-                        "question_index": question_idx,
-                        "question_text": question_text,
-                        "original_data": question_data,
-                        "processing_time_seconds": (datetime.now() - start_time).total_seconds(),
-                        "timestamp": start_time.isoformat(),
-                        "status": "success",
-                        "processing_method": "fallback",
-                        "primary_error": str(primary_error)
-                    })
-                    
-                    logger.info(f"Successfully processed question {question_idx + 1} via fallback in {result['processing_time_seconds']:.2f}s")
-                    return result
-                    
-                except Exception as fallback_error:
-                    logger.error(f"Both primary and fallback processing failed for question {question_idx + 1}")
-                    return self._create_error_result(
-                        question_idx, question_text, question_data, start_time,
-                        primary_error, fallback_error
-                    )
-            else:
-                logger.error(f"Processing failed for question {question_idx + 1}, fallback disabled")
+        # Try primary approach with retries
+        primary_errors = []
+        
+        for retry_attempt in range(self.max_retries):
+            try:
+                if retry_attempt > 0:
+                    logger.info(f"Retry attempt {retry_attempt + 1}/{self.max_retries} for question {question_idx + 1}")
+                
+                result = await self._run_workflow_with_capture(question_text, is_fallback=False, retry_attempt=retry_attempt)
+                result.update({
+                    "question_index": question_idx,
+                    "question_text": question_text,
+                    "original_data": question_data,
+                    "processing_time_seconds": (datetime.now() - start_time).total_seconds(),
+                    "timestamp": start_time.isoformat(),
+                    "status": "success",
+                    "processing_method": "primary",
+                    "retry_attempt": retry_attempt
+                })
+                
+                logger.info(f"Successfully processed question {question_idx + 1} in {result['processing_time_seconds']:.2f}s (attempt {retry_attempt + 1})")
+                return result
+                
+            except Exception as error:
+                primary_errors.append(str(error))
+                
+                # Check if it's a parsing error that we should retry
+                error_msg = str(error).lower()
+                is_parsing_error = any(keyword in error_msg for keyword in [
+                    "failed to parse", "parse error", "json", "completion", 
+                    "invalid", "decode", "format", "validation error", "pydantic",
+                    "field required", "missing", "output_parsing_failure"
+                ])
+                
+                # Also check for specific Plan parsing errors
+                is_plan_error = "failed to parse plan" in error_msg or "validation errors for plan" in error_msg
+                
+                if (is_parsing_error or is_plan_error) and retry_attempt < self.max_retries - 1:
+                    wait_time = (2 ** retry_attempt) + 1  # 2s, 3s, 5s delays
+                    logger.warning(f"Parser error (attempt {retry_attempt + 1}/{self.max_retries}) for question {question_idx + 1}: {str(error)[:200]}...")
+                    logger.info(f"Will retry in {wait_time}s... ({retry_attempt + 2}/{self.max_retries})")
+                    # Add a delay before retry
+                    await asyncio.sleep(wait_time)
+                    continue
+                else:
+                    # If not a parsing error or we've exhausted retries
+                    if retry_attempt == self.max_retries - 1:
+                        if is_parsing_error or is_plan_error:
+                            logger.error(f"All {self.max_retries} retry attempts failed with parsing errors for question {question_idx + 1}")
+                        else:
+                            logger.error(f"Non-parsing error encountered for question {question_idx + 1}: {str(error)[:200]}...")
+                    break
+        
+        # All primary attempts failed
+        primary_error = primary_errors[-1] if primary_errors else "Unknown error"
+        logger.warning(f"Primary processing failed for question {question_idx + 1}: {primary_error}")
+        
+        # Try fallback approach if enabled
+        if self.enable_fallback:
+            try:
+                logger.info(f"Attempting fallback processing for question {question_idx + 1}")
+                result = await self._run_workflow_with_fallback(question_text)
+                result.update({
+                    "question_index": question_idx,
+                    "question_text": question_text,
+                    "original_data": question_data,
+                    "processing_time_seconds": (datetime.now() - start_time).total_seconds(),
+                    "timestamp": start_time.isoformat(),
+                    "status": "success",
+                    "processing_method": "fallback",
+                    "primary_error": str(primary_error)
+                })
+                
+                logger.info(f"Successfully processed question {question_idx + 1} via fallback in {result['processing_time_seconds']:.2f}s")
+                return result
+                
+            except Exception as fallback_error:
+                logger.error(f"Both primary and fallback processing failed for question {question_idx + 1}")
                 return self._create_error_result(
                     question_idx, question_text, question_data, start_time,
-                    primary_error, None
+                    primary_error, fallback_error
                 )
+        else:
+            logger.error(f"Processing failed for question {question_idx + 1}, fallback disabled")
+            return self._create_error_result(
+                question_idx, question_text, question_data, start_time,
+                primary_error, None
+            )
     
     def _create_error_result(self, question_idx: int, question_text: str, 
                            question_data: Dict[str, Any], start_time: datetime,
@@ -240,18 +282,21 @@ class MedBrowseProcessor:
         logger.warning("Could not identify question field, using full data as question")
         return json.dumps(question_data)
     
-    async def _run_workflow_with_capture(self, question: str, is_fallback: bool = False) -> Dict[str, Any]:
+    async def _run_workflow_with_capture(self, question: str, is_fallback: bool = False, retry_attempt: int = 0) -> Dict[str, Any]:
         """Run the workflow and capture its output comprehensively.
         
         Args:
             question: The question to process
             is_fallback: Whether this is a fallback attempt
+            retry_attempt: Which retry attempt this is (0 = first attempt)
             
         Returns:
             Dictionary containing workflow results and captured output
         """
         with OutputCapture() as capture:
             try:
+                logger.info(f"Running workflow (attempt {retry_attempt + 1}) with params: max_plan_iterations={self.max_plan_iterations}, max_step_num={self.max_step_num}")
+                
                 # Run the workflow with output capture
                 workflow_result = await run_agent_workflow_async(
                     user_input=question,
@@ -264,8 +309,15 @@ class MedBrowseProcessor:
                 captured_output = capture.get_output()
                 captured_errors = capture.get_errors()
                 
+                logger.info(f"Workflow completed. Output length: {len(captured_output)} chars, Errors: {len(captured_errors) if captured_errors else 0} chars")
+                
                 # Extract meaningful answer from captured output
                 final_answer = self._extract_final_answer(captured_output)
+                
+                if final_answer:
+                    logger.info(f"Successfully extracted answer: {final_answer[:100]}...")
+                else:
+                    logger.warning("No answer could be extracted from workflow output")
                 
                 return {
                     "workflow_output": str(workflow_result) if workflow_result else "Workflow completed successfully",
@@ -309,9 +361,11 @@ class MedBrowseProcessor:
         # Use more conservative settings for fallback
         fallback_params = {
             "max_plan_iterations": 1,
-            "max_step_num": 1,
+            "max_step_num": 2,  # Increased from 1 to 2 to allow research + answer
             "enable_background_investigation": False
         }
+        
+        logger.info(f"Fallback using: {fallback_params}")
         
         with OutputCapture() as capture:
             try:
@@ -319,7 +373,7 @@ class MedBrowseProcessor:
                 workflow_result = await asyncio.wait_for(
                     run_agent_workflow_async(
                         user_input=question,
-                        debug=False,  # Disable debug to reduce complexity
+                        debug=True,  # Enable debug to get more output for fallback
                         **fallback_params
                     ),
                     timeout=self.fallback_timeout
@@ -364,6 +418,27 @@ class MedBrowseProcessor:
         if not captured_output:
             return None
         
+        # First, look for the specific INGREDIENT: format the questions expect
+        ingredient_pattern = r'INGREDIENT:\s*([A-Z\s]+(?:[A-Z\s]*[A-Z]+)*)'
+        ingredient_matches = re.findall(ingredient_pattern, captured_output, re.IGNORECASE)
+        if ingredient_matches:
+            # Return the last (most recent) ingredient match
+            ingredient = ingredient_matches[-1].strip().upper()
+            logger.info(f"Found ingredient pattern: INGREDIENT: {ingredient}")
+            return f"INGREDIENT: {ingredient}"
+        
+        # Look for standalone ingredient names (all caps words)
+        caps_pattern = r'\b([A-Z]{3,}(?:\s+[A-Z]{3,})*)\b'
+        caps_matches = re.findall(caps_pattern, captured_output)
+        if caps_matches:
+            # Filter out common non-ingredient words
+            excluded_words = {'HTTP', 'POST', 'GET', 'INFO', 'ERROR', 'DEBUG', 'WARNING', 'TRUE', 'FALSE', 'NULL', 'JSON', 'API'}
+            filtered_matches = [match for match in caps_matches if not any(word in excluded_words for word in match.split())]
+            if filtered_matches:
+                ingredient = filtered_matches[-1].strip()
+                logger.info(f"Found caps ingredient: {ingredient}")
+                return f"INGREDIENT: {ingredient}"
+        
         # Look for common patterns in output that indicate final answers
         lines = captured_output.split('\n')
         
@@ -383,7 +458,8 @@ class MedBrowseProcessor:
             if any(skip_pattern in line.lower() for skip_pattern in [
                 'info -', 'error -', 'warning -', 'debug -',
                 'http request:', 'loading', 'installing',
-                'node is', 'coordinator', 'planner', 'researcher'
+                'node is', 'coordinator', 'planner', 'researcher',
+                'executing step:', 'starting', 'completed'
             ]):
                 continue
             
@@ -395,9 +471,12 @@ class MedBrowseProcessor:
         
         if answer_lines:
             # Join the last substantial block as the answer
-            final_answer = '\n'.join(answer_lines[-50:])  # Last 50 lines max
-            return final_answer if len(final_answer.strip()) > 20 else None
+            final_answer = '\n'.join(answer_lines[-20:])  # Last 20 lines max
+            if len(final_answer.strip()) > 10:
+                logger.info(f"Extracted general answer from output: {final_answer[:100]}...")
+                return final_answer
         
+        logger.warning("No meaningful answer found in captured output")
         return None
     
     async def process_all_questions(self, df: pd.DataFrame, 
@@ -521,6 +600,13 @@ class MedBrowseProcessor:
         fallback_success = len([r for r in self.results if r.get("processing_method") == "fallback"])
         with_answers = len([r for r in self.results if r.get("final_answer")])
         
+        # Calculate retry statistics
+        retry_counts = {}
+        for r in self.results:
+            if r["status"] == "success" and "retry_attempt" in r:
+                retry_attempt = r["retry_attempt"]
+                retry_counts[retry_attempt] = retry_counts.get(retry_attempt, 0) + 1
+        
         # Calculate average processing time
         successful_times = [r["processing_time_seconds"] for r in self.results 
                           if r["status"] == "success" and r.get("processing_time_seconds")]
@@ -533,6 +619,10 @@ class MedBrowseProcessor:
         logger.info(f"   🎯 Primary method: {primary_success}, 🔄 Fallback: {fallback_success}")
         logger.info(f"   📝 With answers: {with_answers}")
         logger.info(f"   ⏱️  Avg time: {avg_time:.2f}s")
+        if retry_counts:
+            retry_summary = ", ".join([f"Attempt {k+1}: {v}" for k, v in sorted(retry_counts.items())])
+            logger.info(f"   🔁 Retry distribution: {retry_summary}")
+        logger.info(f"Summary saved to {summary_file}")
     
     def save_results(self, results: List[Dict[str, Any]] = None):
         """Save final results in multiple formats.
@@ -614,6 +704,13 @@ class MedBrowseProcessor:
         primary_success = len([r for r in results if r.get("processing_method") == "primary"])
         fallback_success = len([r for r in results if r.get("processing_method") == "fallback"])
         
+        # Calculate retry statistics
+        retry_counts = {}
+        for r in results:
+            if r["status"] == "success" and "retry_attempt" in r:
+                retry_attempt = r["retry_attempt"]
+                retry_counts[retry_attempt] = retry_counts.get(retry_attempt, 0) + 1
+        
         # Calculate average processing time for successful questions
         successful_times = [r["processing_time_seconds"] for r in results 
                           if r["status"] == "success" and r.get("processing_time_seconds")]
@@ -632,13 +729,15 @@ class MedBrowseProcessor:
                 "fallback_method_success": fallback_success,
                 "questions_with_extracted_answers": with_answers,
                 "average_processing_time_seconds": avg_processing_time,
+                "retry_statistics": retry_counts,
                 "timestamp": datetime.now().isoformat(),
                 "processing_settings": {
                     "max_plan_iterations": self.max_plan_iterations,
                     "max_step_num": self.max_step_num,
                     "enable_background_investigation": self.enable_background_investigation,
                     "enable_fallback": self.enable_fallback,
-                    "fallback_timeout": self.fallback_timeout
+                    "fallback_timeout": self.fallback_timeout,
+                    "max_retries": self.max_retries
                 }
             }
         }
@@ -693,13 +792,13 @@ async def main():
     parser.add_argument(
         "--max-plan-iterations", 
         type=int, 
-        default=1,
+        default=2,  # Changed default to 2
         help="Maximum plan iterations per question"
     )
     parser.add_argument(
         "--max-step-num", 
         type=int, 
-        default=3,
+        default=3,  # Always set to 3
         help="Maximum steps per plan"
     )
     parser.add_argument(
@@ -723,6 +822,12 @@ async def main():
         default=300,
         help="Timeout for fallback processing in seconds (default: 300)"
     )
+    parser.add_argument(
+        "--max-retries",
+        type=int,
+        default=5,
+        help="Maximum number of retries for parsing errors (default: 5)"
+    )
     
     args = parser.parse_args()
     
@@ -734,7 +839,8 @@ async def main():
         enable_background_investigation=not args.disable_background_investigation,
         debug=args.debug,
         enable_fallback=not args.disable_fallback,
-        fallback_timeout=args.fallback_timeout
+        fallback_timeout=args.fallback_timeout,
+        max_retries=args.max_retries
     )
     
     try:

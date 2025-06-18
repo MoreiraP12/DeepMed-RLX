@@ -334,7 +334,7 @@ async def mcp_server_metadata(request: MCPServerMetadataRequest):
     """Get information about an MCP server."""
     try:
         # Set default timeout with a longer value for this endpoint
-        timeout = 300  # Default to 300 seconds for this endpoint
+        timeout = 3000  # Default to 300 seconds for this endpoint
 
         # Use custom timeout from request if provided
         if request.timeout_seconds is not None:
