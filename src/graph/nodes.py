@@ -32,7 +32,7 @@ from .types import State
 from ..config import SEARCH_MAX_RESULTS, SELECTED_SEARCH_ENGINE, SearchEngine
 
 # Import enhanced EBM pyramid functionality
-from src.tools.ebm_pyramid import generate_enhanced_ebm_pyramid_for_research
+# Clean approach - no more EBM pyramid imports needed
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +211,17 @@ def coordinator_node(
 ) -> Command[Literal["planner", "background_investigator", "__end__"]]:
     """Coordinator node that communicate with customers."""
     logger.info("Coordinator talking.")
+    
+    # Clear any previous Tavily sources for new research session
+    logger.info("Starting new research session - clearing previous sources")
+    
+    # Clear any leftover temp sources from previous sessions
+    try:
+        from src.tools.tavily_extractor import clear_temp_sources
+        clear_temp_sources()
+    except Exception as e:
+        logger.warning(f"Failed to clear temp sources: {e}")
+    
     messages = apply_prompt_template("coordinator", state)
     response = (
         get_llm_by_type(AGENT_LLM_MAP["coordinator"])
@@ -243,7 +254,7 @@ def coordinator_node(
         logger.debug(f"Coordinator response: {response}")
 
     return Command(
-        update={"locale": locale},
+        update={"locale": locale, "tavily_sources": []},
         goto=goto,
     )
 
@@ -251,6 +262,7 @@ def coordinator_node(
 def reporter_node(state: State):
     """Reporter node that write a final report."""
     logger.info("Reporter write final report")
+    
     current_plan = state.get("current_plan")
     observations = state.get("observations", [])
     
@@ -280,80 +292,26 @@ def reporter_node(state: State):
             ).model_dump()
         )
     
+
+
     logger.debug(f"Current invoke messages: {invoke_messages}")
     response = get_llm_by_type(AGENT_LLM_MAP["reporter"]).invoke(invoke_messages)
     response_content = response.content
     logger.info(f"reporter response: {response_content}")
 
-    # Generate EBM pyramid if this appears to be medical research
-    ebm_pyramid_path = None
-    try:
-        # Check if this is medical/clinical research by looking for medical keywords
-        medical_keywords = [
-            'medical', 'clinical', 'patient', 'treatment', 'diagnosis', 'therapy',
-            'disease', 'health', 'medicine', 'healthcare', 'therapeutic', 'pharmaceutical',
-            'hospital', 'doctor', 'physician', 'nursing', 'surgery', 'drug', 'medication'
-        ]
-        
-        # Check plan title and description for medical keywords
-        research_text = f"{current_plan.title} {current_plan.thought}".lower()
-        is_medical_research = any(keyword in research_text for keyword in medical_keywords)
-        
-        # Also check observations for medical sources
-        if not is_medical_research and observations:
-            obs_text = " ".join(observations).lower()
-            medical_sources = ['pubmed', 'cochrane', 'nice.org', 'who.int', 'nejm', 'bmj', 'lancet']
-            is_medical_research = any(source in obs_text for source in medical_sources)
-        
-        if is_medical_research and current_plan and current_plan.steps:
-            logger.info("Detected medical research - generating enhanced EBM pyramid with Tavily integration")
-            
-            # Extract search results from completed research steps
-            research_step_results = []
-            
-            for step in current_plan.steps:
-                if step.step_type == StepType.RESEARCH and step.execution_res:
-                    logger.debug(f"Processing research step: {step.title}")
-                    research_step_results.append(step.execution_res)
-            
-            if research_step_results:
-                logger.info(f"Found {len(research_step_results)} completed research steps for EBM analysis")
-                ebm_pyramid_path = generate_enhanced_ebm_pyramid_for_research(research_step_results)
-            else:
-                logger.info("No completed research steps found - skipping EBM pyramid generation")
-                ebm_pyramid_path = None
-            
-            if ebm_pyramid_path:
-                # Add enhanced EBM pyramid to the report
-                ebm_section = f"\n\n---\n\n## Evidence Quality Analysis\n\n"
-                ebm_section += f"An enhanced Evidence Based Medicine (EBM) pyramid has been generated using Tavily's rich metadata "
-                ebm_section += f"to visualize the quality and hierarchy of sources used in this research:\n\n"
-                ebm_section += f"![Enhanced EBM Pyramid]({ebm_pyramid_path})\n\n"
-                ebm_section += f"*The enhanced pyramid above integrates Tavily's source metadata including relevance scores, "
-                ebm_section += f"favicon logos, and domain analysis to provide a comprehensive view of evidence quality. "
-                ebm_section += f"Higher levels represent stronger evidence with greater reliability for clinical decision-making. "
-                ebm_section += f"Source logos and quality metrics help identify the most authoritative references used.*"
-                
-                # Insert EBM section before the final citations
-                if "## Key Citations" in response_content:
-                    response_content = response_content.replace("## Key Citations", ebm_section + "\n## Key Citations")
-                elif "# Key Citations" in response_content:
-                    response_content = response_content.replace("# Key Citations", ebm_section + "\n# Key Citations")
-                else:
-                    # Add at the end if no citations section found
-                    response_content += ebm_section
-                
-                logger.info(f"EBM pyramid added to report: {ebm_pyramid_path}")
-            else:
-                logger.info("EBM pyramid generation skipped - insufficient source data")
-        else:
-            logger.info("Non-medical research detected - skipping EBM pyramid generation")
-            
-    except Exception as e:
-        logger.error(f"Error generating EBM pyramid: {e}")
-        # Continue without EBM pyramid if there's an error
+    # Return both the final report and tavily sources separately in the state
+    tavily_sources = state.get("tavily_sources", [])
+    logger.info(f"🔧 Reporter node: tavily_sources in state: {len(tavily_sources)}")
+    if tavily_sources:
+        logger.info(f"🔧 Reporter node will include {len(tavily_sources)} Tavily sources in state")
+        logger.info(f"🔧 Sources URLs: {[s.get('url', 'no-url') for s in tavily_sources[:3]]}")
+    else:
+        logger.info("🔧 Reporter node found no Tavily sources in state")
 
-    return {"final_report": response_content}
+    return {
+        "final_report": response_content,
+        "tavily_sources": tavily_sources  # Include sources in state for access
+    }
 
 
 def research_team_node(
@@ -432,6 +390,35 @@ async def _execute_agent_step(
     response_content = result["messages"][-1].content
     logger.debug(f"{agent_name.capitalize()} full response: {response_content}")
 
+    # Collect Tavily sources from tool execution
+    tavily_sources = state.get("tavily_sources", [])
+    if agent_name == "researcher":
+        try:
+            from src.tools.tavily_extractor import get_and_clear_temp_sources
+            
+            # Get sources that were stored during tool execution
+            temp_sources = get_and_clear_temp_sources()
+            
+            if temp_sources:
+                # Remove duplicates based on URL
+                unique_sources = []
+                seen_urls = set(source.get('url', '') for source in tavily_sources)
+                
+                for source in temp_sources:
+                    url = source.get('url', '')
+                    if url and url not in seen_urls:
+                        unique_sources.append(source)
+                        seen_urls.add(url)
+                
+                tavily_sources.extend(unique_sources)
+                logger.info(f"🔧 Collected {len(unique_sources)} new Tavily sources from tool execution")
+                logger.info(f"🔧 Total tavily_sources now: {len(tavily_sources)}")
+                logger.info(f"🔧 Sources: {[s.get('url', 'no-url') for s in tavily_sources]}")
+            else:
+                logger.debug("No new Tavily sources found in temp storage")
+        except Exception as e:
+            logger.warning(f"Failed to collect Tavily sources: {e}")
+
     # Update the step with the execution result
     current_step.execution_res = response_content
     logger.info(f"Step '{current_step.title}' execution completed by {agent_name}")
@@ -445,6 +432,7 @@ async def _execute_agent_step(
                 ).model_dump(),
             ],
             "observations": observations + [response_content],
+            "tavily_sources": tavily_sources,
         },
         goto="research_team",
     )

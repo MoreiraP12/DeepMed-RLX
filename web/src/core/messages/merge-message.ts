@@ -35,6 +35,11 @@ export function mergeMessage(message: Message, event: ChatEvent) {
       });
     }
   }
+  
+  // Handle tavily sources data
+  if (event.data.tavily_sources) {
+    message.tavilySources = event.data.tavily_sources;
+  }
   return deepClone(message);
 }
 

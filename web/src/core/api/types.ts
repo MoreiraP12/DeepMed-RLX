@@ -75,9 +75,25 @@ export interface InterruptEvent
     }
   > {}
 
+export interface TavilySourcesEvent {
+  type: "tavily_sources";
+  data: {
+    thread_id: string;
+    tavily_sources: Array<{
+      type: string;
+      title: string;
+      url: string;
+      score?: number;
+      content?: string;
+    }>;
+    count: number;
+  };
+}
+
 export type ChatEvent =
   | MessageChunkEvent
   | ToolCallsEvent
   | ToolCallChunksEvent
   | ToolCallResultEvent
-  | InterruptEvent;
+  | InterruptEvent
+  | TavilySourcesEvent;

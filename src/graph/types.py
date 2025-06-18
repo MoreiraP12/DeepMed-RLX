@@ -21,3 +21,4 @@ class State(MessagesState):
     auto_accepted_plan: bool = False
     enable_background_investigation: bool = True
     background_investigation_results: str = None
+    tavily_sources: list[dict] = []  # Store Tavily search results for sources section

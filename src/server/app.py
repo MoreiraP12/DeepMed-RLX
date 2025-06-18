@@ -101,14 +101,18 @@ async def _astream_workflow_generator(
         if messages:
             resume_msg += f" {messages[-1]['content']}"
         input_ = Command(resume=resume_msg)
+    final_tavily_sources = []  # Track tavily sources for final event
+    
+    config_obj = {
+        "thread_id": thread_id,
+        "max_plan_iterations": max_plan_iterations,
+        "max_step_num": max_step_num,
+        "mcp_settings": mcp_settings,
+    }
+    
     async for agent, _, event_data in graph.astream(
         input_,
-        config={
-            "thread_id": thread_id,
-            "max_plan_iterations": max_plan_iterations,
-            "max_step_num": max_step_num,
-            "mcp_settings": mcp_settings,
-        },
+        config=config_obj,
         stream_mode=["messages", "updates"],
         subgraphs=True,
     ):
@@ -138,6 +142,7 @@ async def _astream_workflow_generator(
                         "images": event_data["images"],
                     },
                 )
+
             continue
         message_chunk, message_metadata = cast(
             tuple[AIMessageChunk, dict[str, any]], event_data
@@ -152,6 +157,12 @@ async def _astream_workflow_generator(
         if message_chunk.response_metadata.get("finish_reason"):
             event_stream_message["finish_reason"] = message_chunk.response_metadata.get(
                 "finish_reason"
+            )
+        
+        # Include tavily sources if available in response metadata
+        if message_chunk.response_metadata.get("tavily_sources"):
+            event_stream_message["tavily_sources"] = message_chunk.response_metadata.get(
+                "tavily_sources"
             )
         if isinstance(message_chunk, ToolMessage):
             # Tool Message - Return the result of the tool call
@@ -175,6 +186,38 @@ async def _astream_workflow_generator(
             else:
                 # AI Message - Raw message tokens
                 yield _make_event("message_chunk", event_stream_message)
+    
+    # Get final state to access tavily_sources
+    try:
+        logger.info("🔧 Getting final state to check for tavily_sources...")
+        # LangGraph get_state requires a config with configurable dict
+        state_config = {"configurable": {"thread_id": thread_id}}
+        final_state = graph.get_state(state_config)
+        logger.info(f"🔧 Final state type: {type(final_state)}")
+        logger.info(f"🔧 Final state keys: {list(final_state.values.keys()) if final_state and hasattr(final_state, 'values') else 'No values'}")
+        
+        if final_state and hasattr(final_state, 'values') and 'tavily_sources' in final_state.values:
+            final_tavily_sources = final_state.values['tavily_sources']
+            logger.info(f"🔧 Found tavily_sources in final state: {len(final_tavily_sources)} sources")
+        else:
+            logger.info("🔧 No tavily_sources found in final state")
+            if final_state and hasattr(final_state, 'values'):
+                logger.info(f"🔧 Available keys in final state: {list(final_state.values.keys())}")
+    except Exception as e:
+        logger.error(f"🔧 Error getting final state: {e}")
+        import traceback
+        logger.error(f"🔧 Traceback: {traceback.format_exc()}")
+
+    # Send final tavily sources event if we have sources
+    if final_tavily_sources:
+        logger.info(f"🔧 Sending final tavily_sources event with {len(final_tavily_sources)} sources")
+        yield _make_event("tavily_sources", {
+            "thread_id": thread_id,
+            "tavily_sources": final_tavily_sources,
+            "count": len(final_tavily_sources)
+        })
+    else:
+        logger.info("🔧 No final tavily sources to send")
 
 
 def _make_event(event_type: str, data: dict[str, any]):

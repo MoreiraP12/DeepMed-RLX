@@ -114,6 +114,30 @@ export async function sendMessage(
   try {
     for await (const event of stream) {
       const { type, data } = event;
+      
+      // Handle tavily_sources event separately
+      if (type === "tavily_sources") {
+        console.log("🔧 Received tavily_sources event:", data);
+        // Find the most recent reporter message and add sources to it
+        const reversedMessageIds = [...useStore.getState().messageIds].reverse();
+        console.log("🔧 Looking for reporter message in:", reversedMessageIds);
+        for (const messageId of reversedMessageIds) {
+          const message = getMessage(messageId);
+          console.log("🔧 Checking message:", messageId, "agent:", message?.agent);
+          if (message?.agent === "reporter") {
+            console.log("🔧 Found reporter message, adding sources:", data.tavily_sources);
+            const updatedMessage: Message = {
+              ...message,
+              tavilySources: data.tavily_sources,
+            };
+            updateMessage(updatedMessage);
+            console.log("🔧 Updated message with sources:", updatedMessage.tavilySources);
+            break;
+          }
+        }
+        continue;
+      }
+      
       messageId = data.id;
       let message: Message | undefined;
       if (type === "tool_call_result") {

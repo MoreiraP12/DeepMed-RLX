@@ -21,6 +21,13 @@ export interface Message {
   options?: Option[];
   finishReason?: "stop" | "interrupt" | "tool_calls";
   interruptFeedback?: string;
+  tavilySources?: Array<{
+    type: string;
+    title: string;
+    url: string;
+    score?: number;
+    content?: string;
+  }>;
 }
 
 export interface Option {

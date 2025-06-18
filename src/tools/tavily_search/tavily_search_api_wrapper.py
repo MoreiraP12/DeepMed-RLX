@@ -98,13 +98,23 @@ class EnhancedTavilySearchAPIWrapper(OriginalTavilySearchAPIWrapper):
             if raw_content := result.get("raw_content"):
                 clean_result["raw_content"] = raw_content
             clean_results.append(clean_result)
-        images = raw_results["images"]
+        images = raw_results.get("images", [])
         for image in images:
-            clean_result = {
-                "type": "image",
-                "image_url": image["url"],
-                "image_description": image["description"],
-            }
+            # Handle both string URLs and dict objects
+            if isinstance(image, str):
+                clean_result = {
+                    "type": "image",
+                    "image_url": image,
+                    "image_description": None,
+                }
+            elif isinstance(image, dict):
+                clean_result = {
+                    "type": "image",
+                    "image_url": image.get("url", image.get("image_url", "")),
+                    "image_description": image.get("description", image.get("image_description")),
+                }
+            else:
+                continue  # Skip invalid image entries
             clean_results.append(clean_result)
         return clean_results
 

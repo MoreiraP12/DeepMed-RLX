@@ -121,6 +121,14 @@ class TavilySearchResultsWithImages(TavilySearchResults):  # type: ignore[overri
             return repr(e), {}
         cleaned_results = self.api_wrapper.clean_results_with_images(raw_results)
         print("sync", json.dumps(cleaned_results, indent=2, ensure_ascii=False))
+        
+        # Store sources in global state for later access
+        try:
+            from src.tools.tavily_extractor import store_tavily_sources_from_results
+            store_tavily_sources_from_results(cleaned_results)
+        except Exception as e:
+            print(f"Warning: Failed to store Tavily sources: {e}")
+        
         return cleaned_results, raw_results
 
     async def _arun(
@@ -145,4 +153,12 @@ class TavilySearchResultsWithImages(TavilySearchResults):  # type: ignore[overri
             return repr(e), {}
         cleaned_results = self.api_wrapper.clean_results_with_images(raw_results)
         print("async", json.dumps(cleaned_results, indent=2, ensure_ascii=False))
+        
+        # Store sources in global state for later access
+        try:
+            from src.tools.tavily_extractor import store_tavily_sources_from_results
+            store_tavily_sources_from_results(cleaned_results)
+        except Exception as e:
+            print(f"Warning: Failed to store Tavily sources: {e}")
+        
         return cleaned_results, raw_results
