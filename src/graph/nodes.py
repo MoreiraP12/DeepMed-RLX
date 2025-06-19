@@ -26,7 +26,7 @@ from src.config.configuration import Configuration
 from src.llms.llm import get_llm_by_type
 from src.prompts.planner_model import Plan, StepType
 from src.prompts.template import apply_prompt_template
-from src.utils.json_utils import repair_json_output
+from src.utils.json_utils import repair_json_output, create_fallback_plan, diagnose_plan_response
 
 from .types import State
 from ..config import SEARCH_MAX_RESULTS, SELECTED_SEARCH_ENGINE, SearchEngine
@@ -127,15 +127,56 @@ def planner_node(
 
     try:
         curr_plan = json.loads(repair_json_output(full_response))
-    except json.JSONDecodeError:
-        logger.warning("Planner response is not a valid JSON")
+    except json.JSONDecodeError as e:
+        logger.warning(f"Planner response is not a valid JSON: {e}")
+        
+        # Diagnose the response to understand what went wrong
+        diagnosis = diagnose_plan_response(full_response)
+        logger.info(f"Plan response diagnosis: {diagnosis}")
+        
+        # Try to create a fallback plan
+        try:
+            locale = state.get("locale", "en-US")
+            fallback_json = create_fallback_plan(locale, "Unable to parse original plan response")
+            curr_plan = json.loads(fallback_json)
+            logger.info("Created fallback plan due to JSON parsing failure")
+        except Exception as fallback_e:
+            logger.error(f"Even fallback plan creation failed: {fallback_e}")
+            if plan_iterations > 0:
+                return Command(goto="reporter")
+            else:
+                return Command(goto="__end__")
+    
+    # Validate that the parsed JSON has the required structure
+    try:
+        # Check for required fields before validation
+        required_fields = ["locale", "has_enough_context", "thought", "title", "steps"]
+        missing_fields = [field for field in required_fields if field not in curr_plan]
+        
+        if missing_fields:
+            logger.warning(f"Planner response missing required fields: {missing_fields}")
+            logger.debug(f"Planner response content: {curr_plan}")
+            
+            # Try to create a minimal valid plan if possible
+            if plan_iterations > 0:
+                return Command(goto="reporter")
+            else:
+                return Command(goto="__end__")
+        
+        # Validate the plan structure
+        new_plan = Plan.model_validate(curr_plan)
+        
+    except Exception as e:
+        logger.error(f"Plan validation failed: {e}")
+        logger.debug(f"Plan content that failed validation: {curr_plan}")
+        
         if plan_iterations > 0:
             return Command(goto="reporter")
         else:
             return Command(goto="__end__")
+    
     if curr_plan.get("has_enough_context"):
         logger.info("Planner response has enough context.")
-        new_plan = Plan.model_validate(curr_plan)
         return Command(
             update={
                 "messages": [

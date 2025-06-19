@@ -172,6 +172,32 @@ interface Plan {
 }
 ```
 
+**CRITICAL FORMATTING RULES:**
+1. Output ONLY valid JSON
+2. ALL fields (locale, has_enough_context, thought, title, steps) are MANDATORY
+3. Use double quotes for all strings
+4. Boolean values must be true/false (lowercase, no quotes)
+5. Arrays must use square brackets []
+6. If no steps needed, use empty array: "steps": []
+
+**Example valid output:**
+```
+{
+  "locale": "en-US",
+  "has_enough_context": false,
+  "thought": "Need to research XYZ topic",
+  "title": "Research Plan for XYZ",
+  "steps": [
+    {
+      "need_web_search": true,
+      "title": "Research Step",
+      "description": "Gather information about XYZ",
+      "step_type": "research"
+    }
+  ]
+}
+```
+
 # Notes
 
 - Focus on information gathering in research steps - delegate all calculations to processing steps
@@ -185,4 +211,4 @@ interface Plan {
   - Processing steps (`need_web_search: false`) for calculations and data processing
 - Default to gathering more information unless the strictest sufficient context criteria are met
 - Always use the language specified by the locale = **{{ locale }}**.
-- IMPORTANT: Set the `locale` field in the JSON output to exactly "{{ locale }}".
+- IMPORTANT: Set the `locale` field in the JSON output to exactly "{{ locale }} and don't forget  `has_enough_context` to true or false".
