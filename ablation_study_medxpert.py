@@ -15,8 +15,8 @@ Examples:
     # Run on first 10 questions (sample mode)
     python ablation_study_medxpert.py --sample-mode
     
-    # Run on first 50 questions
-    python ablation_study_medxpert.py --end-idx 50
+    # Run on first 50 questions (default)
+    python ablation_study_medxpert.py
     
     # Run with debug mode
     python ablation_study_medxpert.py --debug --sample-mode
@@ -64,18 +64,7 @@ class MedXpertProcessor:
         fallback_timeout: int = 300,
         max_retries: int = 5
     ):
-        """Initialize the processor.
-        
-        Args:
-            output_dir: Directory to store results
-            max_plan_iterations: Maximum number of plan iterations for each question
-            max_step_num: Maximum number of steps in a plan
-            enable_background_investigation: Whether to enable background investigation
-            debug: Whether to enable debug logging
-            enable_fallback: Whether to enable fallback mechanisms
-            fallback_timeout: Timeout in seconds for fallback processing
-            max_retries: Maximum number of retries for parsing errors
-        """
+        """Initialize the processor."""
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         
@@ -93,16 +82,7 @@ class MedXpertProcessor:
     
     def load_dataset(self, dataset_name: str = "TsinghuaC3I/MedXpertQA", 
                     subset: str = "Text", split: str = "test") -> pd.DataFrame:
-        """Load the MedXpertQA dataset.
-        
-        Args:
-            dataset_name: HuggingFace dataset name
-            subset: Dataset subset (Text for text-only questions)
-            split: Dataset split to process
-            
-        Returns:
-            DataFrame containing the questions
-        """
+        """Load the MedXpertQA dataset."""
         try:
             logger.info(f"Loading dataset {dataset_name}, subset: {subset}, split: {split}")
             
@@ -132,14 +112,7 @@ class MedXpertProcessor:
             raise
     
     def format_question_for_pipeline(self, question_data: Dict[str, Any]) -> str:
-        """Format a MedXpertQA question for the pipeline.
-        
-        Args:
-            question_data: Raw question data from dataset
-            
-        Returns:
-            Formatted question string for the pipeline
-        """
+        """Format a MedXpertQA question for the pipeline."""
         question_text = question_data.get('question', '')
         options = question_data.get('options', {})
         
@@ -156,15 +129,7 @@ class MedXpertProcessor:
     
     async def process_single_question(self, question_data: Dict[str, Any], 
                                     question_idx: int) -> Dict[str, Any]:
-        """Process a single question through the multi-agent pipeline.
-        
-        Args:
-            question_data: Dictionary containing question data
-            question_idx: Index of the question for tracking
-            
-        Returns:
-            Dictionary containing the question, answer, and metadata
-        """
+        """Process a single question through the multi-agent pipeline."""
         # Format the question for the pipeline
         formatted_question = self.format_question_for_pipeline(question_data)
         
@@ -206,7 +171,13 @@ class MedXpertProcessor:
                     "retry_attempt": retry_attempt,
                     "medical_task": question_data.get('medical_task', ''),
                     "body_system": question_data.get('body_system', ''),
-                    "question_type": question_data.get('question_type', '')
+                    "question_type": question_data.get('question_type', ''),
+                    # Store all captured messages for both success and error analysis
+                    "workflow_output": result.get("workflow_output", ""),
+                    "captured_output": result.get("captured_output", ""),
+                    "captured_errors": result.get("captured_errors"),
+                    "output_length": result.get("output_length", 0),
+                    "has_errors": result.get("has_errors", False)
                 })
                 
                 logger.info(f"Successfully processed question {question_idx + 1} in {result['processing_time_seconds']:.2f}s")
@@ -262,7 +233,13 @@ class MedXpertProcessor:
                     "primary_error": str(primary_error),
                     "medical_task": question_data.get('medical_task', ''),
                     "body_system": question_data.get('body_system', ''),
-                    "question_type": question_data.get('question_type', '')
+                    "question_type": question_data.get('question_type', ''),
+                    # Store all captured messages for both success and error analysis
+                    "workflow_output": result.get("workflow_output", ""),
+                    "captured_output": result.get("captured_output", ""),
+                    "captured_errors": result.get("captured_errors"),
+                    "output_length": result.get("output_length", 0),
+                    "has_errors": result.get("has_errors", False)
                 })
                 
                 logger.info(f"Successfully processed question {question_idx + 1} via fallback")
@@ -279,14 +256,7 @@ class MedXpertProcessor:
             )
     
     def _extract_answer_choice(self, captured_output: str) -> Optional[str]:
-        """Extract the answer choice (A, B, C, D, E) from captured output.
-        
-        Args:
-            captured_output: The captured stdout from workflow execution
-            
-        Returns:
-            Extracted answer choice or None
-        """
+        """Extract the answer choice (A, B, C, D, E) from captured output."""
         if not captured_output:
             return None
         
@@ -860,7 +830,7 @@ Examples:
     parser.add_argument(
         "--end-idx", 
         type=int,
-        help="Ending index for processing questions (default: None = all questions)"
+        help="Ending index for processing questions (default: 50)"
     )
     parser.add_argument(
         "--max-step-num", 

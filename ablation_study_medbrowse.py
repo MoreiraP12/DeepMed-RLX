@@ -38,10 +38,62 @@ sys.path.append(str(Path(__file__).parent))
 from process_medbrowse_questions import MedBrowseProcessor
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+def setup_logging(debug: bool = False, log_dir: str = "logs"):
+    """Setup logging configuration with file output."""
+    log_dir = Path(log_dir)
+    log_dir.mkdir(exist_ok=True)
+    
+    # Create timestamp for log files
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Configure root logger level
+    log_level = logging.DEBUG if debug else logging.INFO
+    
+    # Create formatters
+    detailed_formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+    )
+    simple_formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    
+    # Clear existing handlers
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+    
+    # File handler for all logs
+    all_logs_file = log_dir / f"ablation_study_all_{timestamp}.log"
+    file_handler = logging.FileHandler(all_logs_file, mode='w', encoding='utf-8')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(detailed_formatter)
+    root_logger.addHandler(file_handler)
+    
+    # File handler for errors only
+    error_logs_file = log_dir / f"ablation_study_errors_{timestamp}.log"
+    error_handler = logging.FileHandler(error_logs_file, mode='w', encoding='utf-8')
+    error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(detailed_formatter)
+    root_logger.addHandler(error_handler)
+    
+    # Console handler (still show logs in terminal)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(simple_formatter)
+    root_logger.addHandler(console_handler)
+    
+    # Log the setup
+    logger = logging.getLogger(__name__)
+    logger.info(f"📝 Logging configured:")
+    logger.info(f"   All logs: {all_logs_file}")
+    logger.info(f"   Errors:   {error_logs_file}")
+    logger.info(f"   Level:    {log_level}")
+    
+    return str(all_logs_file), str(error_logs_file)
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +108,7 @@ class AblationStudyRunner:
         start_idx: int = 0,
         end_idx: int = None,
         max_step_num: int = 3,
-        enable_background_investigation: bool = True,
+        enable_background_investigation: bool = False,
         debug: bool = False,
         enable_fallback: bool = True,
         fallback_timeout: int = 300,
@@ -551,8 +603,16 @@ Examples:
         action="store_true",
         help="Run on first 5 questions only for testing (default: disabled)"
     )
+    parser.add_argument(
+        "--log-dir",
+        default="logs",
+        help="Directory to store log files (default: logs)"
+    )
     
     args = parser.parse_args()
+    
+    # Setup logging with file output
+    all_log_file, error_log_file = setup_logging(debug=args.debug, log_dir="logs")
     
     # Adjust for sample mode
     if args.sample_mode:

@@ -1,0 +1,83 @@
+2025-06-19 11:26:31,170 - process_medbrowse_questions - INFO - Loading dataset AIM-Harvard/MedBrowseComp, split: MedBrowseComp_50
+2025-06-19 11:26:31,896 - process_medbrowse_questions - INFO - Successfully loaded 50 questions from the dataset
+2025-06-19 11:26:31,896 - process_medbrowse_questions - INFO - Processing questions 0 to 49 (50 total)
+2025-06-19 11:26:31,896 - process_medbrowse_questions - INFO - 🔄 Starting question 1/50
+2025-06-19 11:26:31,896 - process_medbrowse_questions - INFO - Processing question 1: "For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient...
+2025-06-19 11:26:31,896 - process_medbrowse_questions - INFO - Running workflow (attempt 1) with params: max_plan_iterations=1, max_step_num=3
+2025-06-19 11:26:31,896 - src.workflow - INFO - Starting async workflow with user input: "For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name."
+2025-06-19 11:26:31,899 - src.graph.nodes - INFO - Coordinator talking.
+2025-06-19 11:26:31,899 - src.graph.nodes - INFO - Starting new research session - clearing previous sources
+2025-06-19 11:26:35,317 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:26:35,338 - src.graph.nodes - INFO - background investigation node is running.
+2025-06-19 11:26:37,084 - src.graph.nodes - INFO - Planner generating full plan
+2025-06-19 11:27:20,546 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:27:20,559 - process_medbrowse_questions - ERROR - Workflow execution failed: Failed to parse Plan from completion {"title": "A Randomized, Placebo-Controlled Trial of Ibuprofen in the Prevention of Headache after Epidural Steroid Injections", "source_information": {"journal": "New England Journal of Medicine", "article_type": "Clinical Trial", "study_type": "Randomized, Placebo-Controlled Trial", "publication_date": "July 2012", "authors": [{"name": "Robert D. Kerns", "institution": "University of Michigan"}, {"name": "Kenneth D. Casey", "institution": "University of Michigan"}, {"name": "Lance C. Dworkin", "institution": "University of Rochester"}]}, "clinical_trial_summary": {"purpose": "This study evaluated the effectiveness of ibuprofen in preventing headache after epidural steroid injections (ESIs). ESIs are commonly used for treating spinal pain, but a common side effect is post-injection headache.", "treatment_groups": ["Ibuprofen 600 mg oral immediately before injection", "Placebo"]}, "demographics": {"total_participants": 157, "age_range": "18-75 years", "gender": {"female": 56, "male": 101}, "inclusion_criteria": "Patients undergoing their first or second ESI for lumbar radicular pain, with no prior history of allergy to nonsteroidal anti-inflammatory drugs (NSAIDs)", "exclusion Criteria": "Use of chronic NSAID therapy, history of upper gastrointestinal complications, allergy to NSAIDs, and pregnancy"}, "study_outcomes": {"primary_outcome": "Incidence of headache within 72 hours of the injection", "secondary_outcomes": ["Intensity of headache", "Need for treatment for headache", "Satisfaction with treatment"]}, "results": {"headache incidence": {"ibuprofen group": "13.4%", "placebo group": "3.0%"}, "significant_difference": true, "headache intensity": {"ibuprofen group": "mild-to-moderate", "placebo group": "moderate-to-severe"}, "treatment_needed": {"ibuprofen group": "7.3%", "placebo group": "0%"}, "treatment_satisfaction": {"ibuprofen group": "78.6%", "placebo group": "97.1%"}}, "limitations": ["Small sample size", "Short follow-up period (72 hours)", "Not representative of all patient populations experiencing ESIs"], "significance": "The study suggests that pre-administration of ibuprofen may not be effective in preventing headaches after ESIs and could potentially lead to higher incidence of headache and lower treatment satisfaction, indicating a need for further research to identify better strategies to manage this common adverse effect."}. Got: 3 validation errors for Plan
+locale
+  Field required [type=missing, input_value={'title': 'A Randomized, ...common adverse effect.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+has_enough_context
+  Field required [type=missing, input_value={'title': 'A Randomized, ...common adverse effect.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+thought
+  Field required [type=missing, input_value={'title': 'A Randomized, ...common adverse effect.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+2025-06-19 11:27:20,559 - process_medbrowse_questions - WARNING - Parser error (attempt 1/5) for question 1: Failed to parse Plan from completion {"title": "A Randomized, Placebo-Controlled Trial of Ibuprofen in the Prevention of Headache after Epidural Steroid Injections", "source_information": {"journal": ...
+2025-06-19 11:27:20,559 - process_medbrowse_questions - INFO - Will retry in 2s... (2/5)
+2025-06-19 11:27:22,560 - process_medbrowse_questions - INFO - Retry attempt 2/5 for question 1
+2025-06-19 11:27:22,561 - process_medbrowse_questions - INFO - Running workflow (attempt 2) with params: max_plan_iterations=1, max_step_num=3
+2025-06-19 11:27:22,561 - src.workflow - INFO - Starting async workflow with user input: "For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name."
+2025-06-19 11:27:22,566 - src.graph.nodes - INFO - Coordinator talking.
+2025-06-19 11:27:22,566 - src.graph.nodes - INFO - Starting new research session - clearing previous sources
+2025-06-19 11:27:26,794 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:27:26,799 - src.graph.nodes - INFO - background investigation node is running.
+2025-06-19 11:27:28,699 - src.graph.nodes - INFO - Planner generating full plan
+2025-06-19 11:28:53,602 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:28:53,620 - process_medbrowse_questions - ERROR - Workflow execution failed: Failed to parse Plan from completion {"title": "A Randomized Phase II Trial of PSAT1 Inhibition with Tesevatinib in Patients with Relapsed or Refractory Acute Myeloid Leukemia (NEJMoa1207506)", "authors": ["Daniel A. Pollyea", "Jeffrey L. Kutok", "Mikkael A. Sekeres", "Eunice S. Wang", "Eli Papaemmanuil", "Eytan R. Rosenbaum", "Seth M. Stein", "David A. Sallman", "Suzanne L. Barrans", "Robert K. Rhee", "Srdan Peris", "Neha S. Korde", "Daniel D. Billadeau", "Richard M. Stone", "Daniel T. Starczynski", "David B. Doroshow", "John C. Byrd", "Richard L. Schnitzer", "David M. Lucas", "Cara D. DiNardo", "Michael R. Loriaux", "Elihu H. Estey", "Robert M. Stone", "Jeffrey N. Bennett", "Joseph J. Pidala", "Sohrab B. Shah", "Amit Verma", "James W. Baughn", "Gareth E. Morgan", "Seth J. Pincus", "John M. Pagano", "David A. Tuveson", "Robert S. Melnick", "Mark J. Levis", "Richard M. Elias", "Cathleen M. Kuderer", "Elias Campell", "Robert J. Kreitman", "Michael J. Mauro", "Joseph G. Jurcic", "John M. Bennett", "Richard M. Stone", "John E. Dela Cruz"], "journal": "New England Journal of Medicine", "year_published": 2019, "abstract": "The study is a randomized phase II trial of PSAT1 inhibition in patients with relapsed or refractory acute myeloid leukemia.", "keywords": ["Acute Myeloid Leukemia", "PSAT1 Inhibition", "Tesevatinib", "Clinical Trials", "Phase II Trials", "Relapsed/Refractory Cancers"], "full_text_link": "https://www.nejm.org/doi/10.1056/NEJMoa1207506", "related_studies": [{"title": "A Randomized Phase II Trial of PSAT1 Inhibition with Tesevatinib in Patients with Relapsed or Refractory Acute Myeloid Leukemia", "authors": ["Daniel A. Pollyea", "Jeffrey L. Kutok", "Mikkael A. Sekeres", "Eunice S. Wang", "Eli Papaemmanuil", "Eytan R. Rosenbaum", "Seth M. Stein", "David A. Sallman", "Suzanne L. Barrans", "Robert K. Rhee", "Srdan Peris", "Neha S. Korde", "Daniel D. Billadeau", "Richard M. Stone", "Daniel T. Starczynski", "David B. Doroshow", "John C. Byrd", "Richard L. Schnitzer", "David M. Lucas", "Cara D. DiNardo", "Michael R. Loriaux", "Elihu H. Estey", "Robert M. Stone", "Jeffrey N. Bennett", "Joseph J. Pidala", "Sohrab B. Shah", "Amit Verma", "James W. Baughn", "Gareth E. Morgan", "Seth J. Pincus", "John M. Pagano", "David A. Tuveson", "Robert S. Melnick", "Mark J. Levis", "Richard M. Elias", "Cathleen M. Kuderer", "Elias Campell", "Robert J. Kreitman", "Michael J. Mauro", "Joseph G. Jurcic", "John M. Bennett", "Richard M. Stone", "John E. Dela Cruz"], "journal": "New England Journal of Medicine", "year_published": 2019, "abstract": "The study is a randomized phase II trial of PSAT1 inhibition in patients with relapsed or refractory acute myeloid leukemia."}, {"title": "A Randomized Phase III Trial of PSAT1 Inhibition with Tesevatinib in Patients with Advanced Solid Tumors", "journal": "Journal of Clinical Oncology", "year_published": 2018, "abstract": "This study evaluated the efficacy of PSAT1 inhibition in advanced solid tumors."}], "clinical_trials_info": {"trial_name": "Tesevatinib in Relapsed or Refractory AML", "phase": "II", "purpose": "To evaluate the efficacy and safety of PSAT1 inhibition in patients with relapsed or refractory AML.", "status": "Completed", "start_date": "2012", "end_date": "2018", "location": ["United States", "Canada"], "participants": 148, "eligibility_criteria": "Patients with relapsed or refractory acute myeloid leukemia.", "intervention": "PSAT1 inhibition using Tesevatinib.", "outcome_measures": ["Overall survival", "Progression-free survival", "Complete remission rate"]}, "related_links": [{"title": "NCI CPTC Antibody Characterization Program", "url": "https://antibodies.cancer.gov/detail/CPTC-PSAT1-1"}, {"title": "Cancer.gov - PSAT1 Inhibition", "url": "https://www.cancer.gov/about-cancer/treatment/types/immunotherapy/psat1-inhibition"}, {"title": "NIH ClinicalTrials.gov", "url": "https://clinicaltrials.gov"}]}. Got: 3 validation errors for Plan
+locale
+  Field required [type=missing, input_value={'title': 'A Randomized P...//clinicaltrials.gov'}]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+has_enough_context
+  Field required [type=missing, input_value={'title': 'A Randomized P...//clinicaltrials.gov'}]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+thought
+  Field required [type=missing, input_value={'title': 'A Randomized P...//clinicaltrials.gov'}]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+2025-06-19 11:28:53,621 - process_medbrowse_questions - WARNING - Parser error (attempt 2/5) for question 1: Failed to parse Plan from completion {"title": "A Randomized Phase II Trial of PSAT1 Inhibition with Tesevatinib in Patients with Relapsed or Refractory Acute Myeloid Leukemia (NEJMoa1207506)", "autho...
+2025-06-19 11:28:53,621 - process_medbrowse_questions - INFO - Will retry in 3s... (3/5)
+2025-06-19 11:28:56,622 - process_medbrowse_questions - INFO - Retry attempt 3/5 for question 1
+2025-06-19 11:28:56,623 - process_medbrowse_questions - INFO - Running workflow (attempt 3) with params: max_plan_iterations=1, max_step_num=3
+2025-06-19 11:28:56,623 - src.workflow - INFO - Starting async workflow with user input: "For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name."
+2025-06-19 11:28:56,629 - src.graph.nodes - INFO - Coordinator talking.
+2025-06-19 11:28:56,629 - src.graph.nodes - INFO - Starting new research session - clearing previous sources
+2025-06-19 11:29:00,693 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:29:00,700 - src.graph.nodes - INFO - background investigation node is running.
+2025-06-19 11:29:02,819 - src.graph.nodes - INFO - Planner generating full plan
+2025-06-19 11:29:12,772 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:29:12,786 - process_medbrowse_questions - ERROR - Workflow execution failed: Failed to parse Plan from completion {"error": "The JSON structure or content is not valid. Please check the input and correct any syntax or formatting errors before proceeding. Error: JSON::ParserError - Invalid \\escape: line 109 column 23 (char 8395)"}. Got: 4 validation errors for Plan
+locale
+  Field required [type=missing, input_value={'error': 'The JSON struc... column 23 (char 8395)'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+has_enough_context
+  Field required [type=missing, input_value={'error': 'The JSON struc... column 23 (char 8395)'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+thought
+  Field required [type=missing, input_value={'error': 'The JSON struc... column 23 (char 8395)'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+title
+  Field required [type=missing, input_value={'error': 'The JSON struc... column 23 (char 8395)'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.10/v/missing
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+2025-06-19 11:29:12,786 - process_medbrowse_questions - WARNING - Parser error (attempt 3/5) for question 1: Failed to parse Plan from completion {"error": "The JSON structure or content is not valid. Please check the input and correct any syntax or formatting errors before proceeding. Error: JSON::ParserErr...
+2025-06-19 11:29:12,786 - process_medbrowse_questions - INFO - Will retry in 5s... (4/5)
+2025-06-19 11:29:17,788 - process_medbrowse_questions - INFO - Retry attempt 4/5 for question 1
+2025-06-19 11:29:17,788 - process_medbrowse_questions - INFO - Running workflow (attempt 4) with params: max_plan_iterations=1, max_step_num=3
+2025-06-19 11:29:17,788 - src.workflow - INFO - Starting async workflow with user input: "For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name."
+2025-06-19 11:29:17,791 - src.graph.nodes - INFO - Coordinator talking.
+2025-06-19 11:29:17,791 - src.graph.nodes - INFO - Starting new research session - clearing previous sources
+2025-06-19 11:29:21,781 - httpx - INFO - HTTP Request: POST https://9aeb-3-16-2-146.ngrok-free.app/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-19 11:29:21,784 - src.graph.nodes - INFO - background investigation node is running.
+2025-06-19 11:29:23,418 - src.graph.nodes - INFO - Planner generating full plan
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

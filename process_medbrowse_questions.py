@@ -156,7 +156,14 @@ class MedBrowseProcessor:
                     "timestamp": start_time.isoformat(),
                     "status": "success",
                     "processing_method": "primary",
-                    "retry_attempt": retry_attempt
+                    "retry_attempt": retry_attempt,
+                    # Store all captured messages for both success and error analysis
+                    "workflow_output": result.get("workflow_output", ""),
+                    "captured_output": result.get("captured_output", ""),
+                    "captured_errors": result.get("captured_errors"),
+                    "output_length": result.get("output_length", 0),
+                    "has_errors": result.get("has_errors", False),
+                    "final_answer": result.get("final_answer")
                 })
                 
                 logger.info(f"Successfully processed question {question_idx + 1} in {result['processing_time_seconds']:.2f}s (attempt {retry_attempt + 1})")
@@ -209,7 +216,15 @@ class MedBrowseProcessor:
                     "timestamp": start_time.isoformat(),
                     "status": "success",
                     "processing_method": "fallback",
-                    "primary_error": str(primary_error)
+                    "primary_error": str(primary_error),
+                    # Store all captured messages for both success and error analysis
+                    "workflow_output": result.get("workflow_output", ""),
+                    "captured_output": result.get("captured_output", ""),
+                    "captured_errors": result.get("captured_errors"),
+                    "output_length": result.get("output_length", 0),
+                    "has_errors": result.get("has_errors", False),
+                    "final_answer": result.get("final_answer"),
+                    "fallback_params": result.get("fallback_params", {})
                 })
                 
                 logger.info(f"Successfully processed question {question_idx + 1} via fallback in {result['processing_time_seconds']:.2f}s")
@@ -236,9 +251,12 @@ class MedBrowseProcessor:
             "question_index": question_idx,
             "question_text": question_text,
             "original_data": question_data,
-            "workflow_output": None,
-            "captured_output": None,
-            "captured_errors": None,
+            "workflow_output": f"Error: {str(primary_error)}",
+            "captured_output": "",  # Initialize as empty string instead of None
+            "captured_errors": str(primary_error),  # Store error as captured error
+            "final_answer": None,
+            "output_length": 0,
+            "has_errors": True,
             "processing_time_seconds": (datetime.now() - start_time).total_seconds(),
             "timestamp": start_time.isoformat(),
             "status": "error",
@@ -625,7 +643,7 @@ class MedBrowseProcessor:
         logger.info(f"Summary saved to {summary_file}")
     
     def save_results(self, results: List[Dict[str, Any]] = None):
-        """Save final results in multiple formats.
+        """Save processing results to files with comprehensive data storage like MedXpert.
         
         Args:
             results: Results to save (if None, uses self.results)
@@ -637,37 +655,48 @@ class MedBrowseProcessor:
             logger.warning("No results to save")
             return
         
-        # Save as JSON
-        json_file = self.output_dir / f"medbrowse_results_{self.timestamp}.json"
-        with open(json_file, 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved results as JSON to {json_file}")
+        # Generate comprehensive results
+        timestamp = self.timestamp
         
-        # Save as CSV (simplified version)
-        csv_file = self.output_dir / f"medbrowse_results_{self.timestamp}.csv"
-        simplified_results = []
+        # Save detailed JSON results
+        json_file = self.output_dir / f"medbrowse_results_{timestamp}.json"
+        with open(json_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, indent=2, ensure_ascii=False, default=str)
+        
+        # Save comprehensive CSV summary (like MedXpert)
+        csv_file = self.output_dir / f"medbrowse_results_{timestamp}.csv"
+        csv_data = []
+        
         for result in results:
-            simplified_results.append({
-                "question_index": result["question_index"],
-                "question_text": result["question_text"][:500],  # Truncate for CSV
-                "status": result["status"],
-                "processing_method": result.get("processing_method", "unknown"),
-                "processing_time_seconds": result.get("processing_time_seconds"),
-                "timestamp": result["timestamp"],
-                "has_final_answer": bool(result.get("final_answer")),
-                "output_length": result.get("output_length", 0),
-                "error_message": result.get("primary_error", "")[:200]  # Truncate error
+            csv_data.append({
+                'question_index': result.get('question_index', ''),
+                'question_text': str(result.get('question_text', ''))[:500],  # Truncate long text
+                'status': result.get('status', ''),
+                'processing_method': result.get('processing_method', ''),
+                'processing_time_seconds': result.get('processing_time_seconds', 0),
+                'retry_attempt': result.get('retry_attempt', 0),
+                'has_final_answer': bool(result.get('final_answer')),
+                'final_answer': str(result.get('final_answer', ''))[:200] if result.get('final_answer') else '',
+                'workflow_output': str(result.get('workflow_output', ''))[:200],  # Truncate for CSV
+                'captured_output_length': result.get('output_length', 0),
+                'has_errors': result.get('has_errors', False),
+                'captured_errors': str(result.get('captured_errors', ''))[:200] if result.get('captured_errors') else '',
+                'primary_error': str(result.get('primary_error', ''))[:200] if result.get('primary_error') else '',
+                'fallback_error': str(result.get('fallback_error', ''))[:200] if result.get('fallback_error') else '',
+                'timestamp': result.get('timestamp', '')
             })
         
-        df_results = pd.DataFrame(simplified_results)
-        df_results.to_csv(csv_file, index=False)
-        logger.info(f"Saved simplified results as CSV to {csv_file}")
+        pd.DataFrame(csv_data).to_csv(csv_file, index=False)
         
         # Save successful answers separately
         self._save_successful_answers(results)
         
         # Generate summary report
         self._generate_summary_report(results)
+        
+        logger.info(f"Results saved:")
+        logger.info(f"  📋 JSON: {json_file}")
+        logger.info(f"  📊 CSV: {csv_file}")
     
     def _save_successful_answers(self, results: List[Dict[str, Any]]):
         """Save successful answers in a readable format."""
@@ -695,10 +724,12 @@ class MedBrowseProcessor:
         logger.info(f"Saved {len(successful_results)} successful answers to {answers_file}")
     
     def _generate_summary_report(self, results: List[Dict[str, Any]]):
-        """Generate a summary report of the processing results."""
+        """Generate a comprehensive summary report like MedXpert."""
         total_questions = len(results)
-        successful = len([r for r in results if r["status"] == "success"])
-        failed = total_questions - successful
+        successful_results = [r for r in results if r.get('status') == 'success']
+        
+        success_rate = len(successful_results) / total_questions if total_questions > 0 else 0
+        avg_time = sum(r.get('processing_time_seconds', 0) for r in results) / total_questions if total_questions > 0 else 0
         
         # Calculate processing method stats
         primary_success = len([r for r in results if r.get("processing_method") == "primary"])
@@ -707,55 +738,83 @@ class MedBrowseProcessor:
         # Calculate retry statistics
         retry_counts = {}
         for r in results:
-            if r["status"] == "success" and "retry_attempt" in r:
+            if "retry_attempt" in r:
                 retry_attempt = r["retry_attempt"]
                 retry_counts[retry_attempt] = retry_counts.get(retry_attempt, 0) + 1
-        
-        # Calculate average processing time for successful questions
-        successful_times = [r["processing_time_seconds"] for r in results 
-                          if r["status"] == "success" and r.get("processing_time_seconds")]
-        avg_processing_time = sum(successful_times) / len(successful_times) if successful_times else 0
         
         # Count questions with extracted answers
         with_answers = len([r for r in results if r.get("final_answer")])
         
         summary = {
-            "processing_summary": {
-                "total_questions": total_questions,
-                "successful": successful,
-                "failed": failed,
-                "success_rate": successful / total_questions if total_questions > 0 else 0,
-                "primary_method_success": primary_success,
-                "fallback_method_success": fallback_success,
-                "questions_with_extracted_answers": with_answers,
-                "average_processing_time_seconds": avg_processing_time,
-                "retry_statistics": retry_counts,
-                "timestamp": datetime.now().isoformat(),
-                "processing_settings": {
-                    "max_plan_iterations": self.max_plan_iterations,
-                    "max_step_num": self.max_step_num,
-                    "enable_background_investigation": self.enable_background_investigation,
-                    "enable_fallback": self.enable_fallback,
-                    "fallback_timeout": self.fallback_timeout,
-                    "max_retries": self.max_retries
+            'processing_summary': {
+                'total_questions': total_questions,
+                'successful_questions': len(successful_results),
+                'failed_questions': total_questions - len(successful_results),
+                'success_rate': success_rate,
+                'questions_with_extracted_answers': with_answers,
+                'answer_extraction_rate': with_answers / total_questions if total_questions > 0 else 0,
+                'avg_processing_time_seconds': avg_time,
+                'timestamp': datetime.now().isoformat()
+            },
+            'detailed_metrics': {
+                'by_processing_method': self._group_by_field(results, 'processing_method'),
+                'by_status': self._group_by_field(results, 'status'),
+                'retry_statistics': retry_counts,
+                'processing_stats': {
+                    'primary_method_success': primary_success,
+                    'fallback_method_success': fallback_success,
+                    'total_failed': total_questions - (primary_success + fallback_success)
+                },
+                'processing_settings': {
+                    'max_plan_iterations': self.max_plan_iterations,
+                    'max_step_num': self.max_step_num,
+                    'enable_background_investigation': self.enable_background_investigation,
+                    'enable_fallback': self.enable_fallback,
+                    'fallback_timeout': self.fallback_timeout,
+                    'max_retries': self.max_retries
                 }
             }
         }
         
+        # Save summary
         summary_file = self.output_dir / f"medbrowse_summary_{self.timestamp}.json"
         with open(summary_file, 'w', encoding='utf-8') as f:
-            json.dump(summary, f, indent=2)
+            json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
         
-        logger.info(f"Processing Summary:")
-        logger.info(f"  Total questions: {total_questions}")
-        logger.info(f"  Successful: {successful}")
-        logger.info(f"  Failed: {failed}")
-        logger.info(f"  Success rate: {successful/total_questions*100:.1f}%")
-        logger.info(f"  Primary method success: {primary_success}")
-        logger.info(f"  Fallback method success: {fallback_success}")
-        logger.info(f"  Questions with answers: {with_answers}")
-        logger.info(f"  Average processing time: {avg_processing_time:.2f}s")
-        logger.info(f"Summary saved to {summary_file}")
+        logger.info(f"📄 Summary: {summary_file}")
+        logger.info(f"   Success Rate: {success_rate:.2%}")
+        logger.info(f"   Answer Extraction Rate: {with_answers / total_questions:.2%}" if total_questions > 0 else "   Answer Extraction Rate: 0%")
+        logger.info(f"   Primary Method: {primary_success}, Fallback Method: {fallback_success}")
+        logger.info(f"   Average Processing Time: {avg_time:.2f}s")
+
+    def _group_by_field(self, results: List[Dict[str, Any]], field: str) -> Dict[str, Any]:
+        """Group results by a specific field and calculate metrics (like MedXpert)."""
+        groups = {}
+        
+        for result in results:
+            field_value = result.get(field, 'Unknown')
+            if field_value not in groups:
+                groups[field_value] = {
+                    'total': 0,
+                    'successful': 0,
+                    'with_answers': 0,
+                    'success_rate': 0,
+                    'answer_extraction_rate': 0
+                }
+            
+            groups[field_value]['total'] += 1
+            if result.get('status') == 'success':
+                groups[field_value]['successful'] += 1
+            if result.get('final_answer'):
+                groups[field_value]['with_answers'] += 1
+        
+        # Calculate rates
+        for group_data in groups.values():
+            total = group_data['total']
+            group_data['success_rate'] = group_data['successful'] / total if total > 0 else 0
+            group_data['answer_extraction_rate'] = group_data['with_answers'] / total if total > 0 else 0
+        
+        return groups
 
 
 async def main():

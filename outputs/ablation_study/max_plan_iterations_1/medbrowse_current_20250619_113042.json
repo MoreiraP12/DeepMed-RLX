@@ -1,0 +1,22 @@
+[
+  {
+    "workflow_output": "Workflow completed successfully",
+    "final_answer": null,
+    "captured_output": "",
+    "captured_errors": null,
+    "output_length": 0,
+    "has_errors": false,
+    "question_index": 0,
+    "question_text": "\"For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name.\"",
+    "original_data": {
+      "gold": "ENZALUTAMIDE",
+      "prompt": "\"For clinical trial NCT00974311. Among the more effective regimen ingredients, find which ingredient starts with the letter 'E'.\\nReturn only the name of the ingredient or UNKNOWN in all CAPS in the format of INGREDIENT: name.\"",
+      "task_name": "Ingredient"
+    },
+    "processing_time_seconds": 264.849419,
+    "timestamp": "2025-06-19T11:30:43.392896",
+    "status": "success",
+    "processing_method": "primary",
+    "retry_attempt": 0
+  }
+]
